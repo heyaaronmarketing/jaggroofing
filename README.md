@@ -73,18 +73,46 @@ cd ~/GIT/jagg-estimate && npm run secret -- put ACCULYNX_API_KEY
 4. Optional lead-loss fallback: `npm run secret -- put RESEND_API_KEY` and add
    `NOTIFY_EMAIL` to `vars`.
 
-## Run and deploy
+## Deployment
 
-```bash
-npm run dev
-```
+| | |
+|---|---|
+| Repo | `heyaaronmarketing/jaggroofing` (public) |
+| Cloudflare Worker | `jaggroofing` on `Aaron@kickass.net's Account` (`681da9da…`) |
+| Live URL | https://quote.jagg-roofing.com |
+| Zone | `jagg-roofing.com` (`bbca6a78…`) |
+
+**Automatic publishing:** the Worker is connected to the GitHub repo through
+Cloudflare Workers Builds. Any push to `main` triggers a build that runs
+`npx wrangler deploy` against this `wrangler.jsonc`, so no GitHub Action is
+needed and none is checked in. The custom domain is declared in `routes` with
+`custom_domain: true`, which means it survives every deploy instead of having to
+be re-attached in the dashboard.
+
+If a push does not deploy, check **Workers → jaggroofing → Settings → Build** in
+the dashboard:
+
+- Build command: *(leave empty)*
+- Deploy command: `npx wrangler deploy`
+- Root directory: `/`
+
+**Manual deploy** (same result, from this Mac):
 
 ```bash
 npm run deploy
 ```
 
+Local dev:
+
+```bash
+npm run dev
+```
+
 Both wrap `npx wrangler` with `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem`, which is
 what makes wrangler work on this Mac.
+
+Secrets are **not** managed by Workers Builds — set `ACCULYNX_API_KEY` once with
+`npm run secret -- put ACCULYNX_API_KEY` and it persists across deploys.
 
 ## Verification notes
 

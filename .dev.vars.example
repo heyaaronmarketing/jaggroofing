@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local dev (gitignored). Never commit real keys.
+ACCULYNX_API_KEY=paste-the-jagg-acculynx-api-key-here
+# Optional lead-loss fallback
+# RESEND_API_KEY=re_xxx

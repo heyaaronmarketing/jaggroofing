@@ -1,0 +1,12 @@
+{
+  "name": "jagg-estimate",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler dev --port 8799",
+    "deploy": "NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler deploy",
+    "secret": "NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler secret",
+    "tail": "NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler tail",
+    "whoami": "NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler whoami"
+  }
+}

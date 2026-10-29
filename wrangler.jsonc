@@ -16,7 +16,7 @@
   ],
   "observability": { "enabled": true },
   "vars": {
-    "LEAD_SOURCE_NAME": "Website",
+    "LEAD_SOURCE_NAME": "Hey Aaron",
     "CONTACT_TYPE_NAME": "Customer"
   }
 }

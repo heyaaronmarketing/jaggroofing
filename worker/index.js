@@ -26,6 +26,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/geo') return handleGeo(url);
+    if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -164,13 +165,25 @@ async function getLookups(env) {
     acculynx(env, '/company-settings/job-file-settings/trade-types').then(listOf).catch(() => []),
   ]);
 
-  const pick = (rows, want) =>
+  // Exact match first, then a contains match. Deliberately NO "just take the
+  // first row" fallback for the lead source: guessing silently mis-attributes
+  // every lead, which is worse than sending none.
+  const match = (rows, want) =>
     rows.find((r) => nameOf(r).toLowerCase() === want) ||
     rows.find((r) => nameOf(r).toLowerCase().includes(want)) ||
-    rows[0];
+    null;
 
-  const contactType = pick(contactTypes, wantContactType);
-  const leadSource = pick(leadSources, wantLeadSource);
+  // A contact does need a type, so there the first active one is a safe default.
+  const contactType = match(contactTypes, wantContactType) || contactTypes[0] || null;
+  const leadSource = match(leadSources, wantLeadSource);
+
+  if (!leadSource) {
+    console.error(
+      'LEAD SOURCE NOT FOUND: no active AccuLynx lead source matches "' +
+        (env.LEAD_SOURCE_NAME || 'Website') + '". Available: ' +
+        leadSources.map(nameOf).join(' | ') +
+        '. Leads will be created WITHOUT a source until this is fixed.');
+  }
 
   const tradeByName = {};
   for (const t of tradeTypes) tradeByName[nameOf(t).toLowerCase()] = t.id;
@@ -178,6 +191,14 @@ async function getLookups(env) {
   lookupCache = {
     contactTypeId: contactType ? contactType.id : null,
     leadSourceId: leadSource ? leadSource.id : null,
+    resolved: {
+      leadSourceWanted: env.LEAD_SOURCE_NAME || 'Website',
+      leadSourceMatched: leadSource ? nameOf(leadSource) : null,
+      contactTypeMatched: contactType ? nameOf(contactType) : null,
+      availableLeadSources: leadSources.map(nameOf),
+      availableContactTypes: contactTypes.map(nameOf),
+      availableTradeTypes: tradeTypes.map(nameOf),
+    },
     tradeByName,
   };
   return lookupCache;
@@ -190,6 +211,24 @@ function tradeIdsFor(service, tradeByName) {
   // "Other" / free text has no matching trade type — leave it off the job and
   // let the note carry the detail.
   return [];
+}
+
+/* --------------------------------------------------- lookup diagnostics */
+
+// Shows what AccuLynx actually offers and what the config resolved to, so a
+// mis-attributed lead source is visible instead of silent. Token-gated.
+async function handleLookups(url, env) {
+  const token = url.searchParams.get('token') || '';
+  if (!env.DIAG_TOKEN || token !== env.DIAG_TOKEN) {
+    return json({ ok: false, error: 'Not found' }, 404);
+  }
+  if (url.searchParams.get('fresh')) lookupCache = null;
+  try {
+    const l = await getLookups(env);
+    return json({ ok: true, ...l.resolved, leadSourceId: l.leadSourceId });
+  } catch (err) {
+    return json({ ok: false, error: String(err && err.message) }, 502);
+  }
 }
 
 /* ------------------------------------------------------------ lead intake */

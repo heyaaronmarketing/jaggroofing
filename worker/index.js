@@ -27,6 +27,7 @@ export default {
 
     if (url.pathname === '/api/geo') return handleGeo(url);
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
+    if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -229,6 +230,69 @@ async function handleLookups(url, env) {
   } catch (err) {
     return json({ ok: false, error: String(err && err.message) }, 502);
   }
+}
+
+/* ------------------------------------------- lead source history report */
+
+/**
+ * Counts jobs by lead source and month over a date range.
+ *
+ * AccuLynx has no lead-source filter and does not expand leadSource on the
+ * list endpoint, so this lists job ids for the range and then reads each job
+ * individually. Jobs are fetched in small concurrent batches to stay inside
+ * the documented rate limit.
+ */
+async function handleLeadSourceReport(url, env) {
+  const token = url.searchParams.get('token') || '';
+  if (!env.DIAG_TOKEN || token !== env.DIAG_TOKEN) return json({ ok: false, error: 'Not found' }, 404);
+
+  const from = url.searchParams.get('from') || '2026-06-01';
+  const to = url.searchParams.get('to') || '2026-10-31';
+  const cap = Math.min(Number(url.searchParams.get('cap') || 400), 800);
+
+  // 1. page the job list for the window
+  const ids = [];
+  let start = 0;
+  while (ids.length < cap) {
+    const page = await acculynx(env,
+      `/jobs?startDate=${from}&endDate=${to}&dateFilterType=CreatedDate` +
+      `&pageSize=25&pageStartIndex=${start}&sortBy=CreatedDate&sortOrder=Ascending`);
+    const rows = listOf(page);
+    if (!rows.length) break;
+    for (const r of rows) if (r && r.id) ids.push(r.id);
+    if (rows.length < 25) break;
+    start += 25;
+  }
+
+  if (url.searchParams.get('debug')) {
+    const one = ids.length ? await acculynx(env, `/jobs/${ids[0]}`) : null;
+    return json({ ok: true, found: ids.length, sampleKeys: one ? Object.keys(one) : [], sample: one });
+  }
+
+  // 2. read each job for its lead source, 6 at a time
+  const byMonth = {};
+  const bySource = {};
+  let read = 0, failed = 0;
+  for (let i = 0; i < ids.length; i += 6) {
+    const batch = await Promise.all(ids.slice(i, i + 6).map((id) =>
+      acculynx(env, `/jobs/${id}`).catch(() => null)));
+    for (const j of batch) {
+      if (!j) { failed++; continue; }
+      read++;
+      const src = (j.leadSource && (j.leadSource.name || j.leadSource.description)) || 'None';
+      const created = String(j.createdDate || j.created || j.createdOn || '').slice(0, 7) || 'unknown';
+      bySource[src] = (bySource[src] || 0) + 1;
+      byMonth[created] = byMonth[created] || {};
+      byMonth[created][src] = (byMonth[created][src] || 0) + 1;
+    }
+  }
+
+  return json({
+    ok: true, from, to,
+    jobsInRange: ids.length, read, failed,
+    bySource: Object.fromEntries(Object.entries(bySource).sort((a, b) => b[1] - a[1])),
+    byMonth: Object.fromEntries(Object.entries(byMonth).sort()),
+  });
 }
 
 /* ------------------------------------------------------------ lead intake */

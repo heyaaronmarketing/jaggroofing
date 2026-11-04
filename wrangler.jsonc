@@ -8,7 +8,9 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    // The Worker must see every request: go.jagg-roofing.com/<slug> is an
+// arbitrary path that the asset handler would otherwise swallow.
+    "run_worker_first": true,
     "not_found_handling": "single-page-application"
   },
   "routes": [

@@ -28,6 +28,12 @@ export default {
     // go.jagg-roofing.com/<slug> — short links for the Facebook group posts
     if (url.hostname.startsWith('go.')) return handleShortLink(url, request, env, ctx);
 
+    // /review/* is client-facing but not public
+    if (url.pathname.startsWith('/review')) {
+      const gate = reviewGate(request, env);
+      if (gate) return gate;
+    }
+
     if (url.pathname === '/api/geo') return handleGeo(url);
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
@@ -233,6 +239,46 @@ async function handleLookups(url, env) {
   } catch (err) {
     return json({ ok: false, error: String(err && err.message) }, 502);
   }
+}
+
+/* ------------------------------------------------------- review gate */
+
+const REVIEW_COOKIE = 'jagg_review';
+
+/** Returns a Response when the visitor should be stopped, otherwise null. */
+function reviewGate(request, env) {
+  const pw = env.REVIEW_PASSWORD || 'shingle';
+  const url = new URL(request.url);
+
+  if (url.searchParams.get('pw') === pw) {
+    const to = new URL(url); to.searchParams.delete('pw');
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: to.pathname + to.search,
+        'set-cookie': `${REVIEW_COOKIE}=${pw}; Path=/review; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
+      },
+    });
+  }
+
+  const cookie = request.headers.get('cookie') || '';
+  if (cookie.split(';').some((c) => c.trim() === `${REVIEW_COOKIE}=${pw}`)) return null;
+
+  return new Response(`<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>JAGG</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#14213D;
+color:#fff;font:15px/1.5 Inter,system-ui,sans-serif}
+form{background:#fff;color:#14213D;padding:28px;border-radius:12px;width:min(92vw,330px);
+display:flex;flex-direction:column;gap:12px}
+label{font-size:12px;font-weight:700;color:#5A6678}
+input{font:inherit;font-size:16px;padding:11px;border:1px solid #DCE1E9;border-radius:8px}
+button{font:inherit;font-weight:700;font-size:15px;padding:12px;border:0;border-radius:8px;
+background:#C2410C;color:#fff;cursor:pointer}</style>
+<form method="GET"><label for="pw">Password</label>
+<input id="pw" name="pw" type="password" autofocus autocomplete="current-password">
+<button type="submit">View</button></form>`,
+    { status: 401, headers: { 'content-type': 'text/html; charset=utf-8' } });
 }
 
 /* --------------------------------------------------------- short links */

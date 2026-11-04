@@ -277,7 +277,7 @@ async function handleShortLink(url, request, env, ctx) {
     city: cf.city || null, region: cf.region || null, country: cf.country || null,
     ua: (request.headers.get('user-agent') || '').slice(0, 120),
     ref: request.headers.get('referer') || null,
-    ts: nowIso(),
+    ts: new Date().toISOString(),
   }));
 
   return Response.redirect(target.toString(), 302);

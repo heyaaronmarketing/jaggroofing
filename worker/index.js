@@ -296,7 +296,20 @@ const LINKS = {
   w1c: ['Ready for another LI winter',      'East Islip NY Uncensored',        'p3-winterready',   'g-eastislip'],
   w1d: ['Most roofers say replace',         'Patchogue Long Island NY',        'p4-replacerepair', 'g-patchogue'],
   w1e: ['Family / pumpkins',                'Centereach NY Community Group',   'p5-family',        'g-centereach'],
-  w1f: ['First company photo',              'East Moriches Community Posts',   'p6-crew',          'g-eastmoriches'],
+  w1f: ['First company photo',             'East Moriches Community Posts',   'p6-crew',          'g-eastmoriches'],
+
+  w2a: ['Four generations in Suffolk',      'Town of Babylon group',              'p7-generations',  'g-babylontown'],
+  w2b: ['As a father',                      'Babylon Village Connection',         'p8-asafather',    'g-babylonvillage'],
+  w2c: ['The socks photo',                  'West Islip Community',               'p9-socks',        'g-westislip'],
+  w2d: ['Just finished - full roof',        'Smithtown NY community page',        'p1-justfinished', 'g-smithtown'],
+  w2e: ['Once the crew leaves',             'Shirley and the Mastics',            'p2-aftercare',    'g-shirleymastics'],
+  w2f: ['Ready for another LI winter',      'Port Jeff, Setauket, Stony Brook',   'p3-winterready',  'g-portjeff'],
+  w2g: ['Most roofers say replace',         'Huntington Station Matters',         'p4-replacerepair','g-huntingtonstn'],
+  w2h: ['Four generations in Suffolk',      'Long Island, NY Business Owners',    'p7-generations',  'g-libusiness'],
+  w2i: ['Family / pumpkins',                'The Deer Park We all remember.',     'p5-family',       'g-deerpark'],
+  w2j: ['As a father',                      'Miller Place / Sound Beach',         'p8-asafather',    'g-millerplace'],
+  w2k: ['First company photo',              'Islip That & This',                  'p6-crew',         'g-islipthatthis'],
+  w2l: ['The socks photo',                  'Lake Grove/Centereach',              'p9-socks',        'g-lakegrove'],
 };
 
 const DEST = 'https://quote.jagg-roofing.com/';

@@ -25,6 +25,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // go.jagg-roofing.com/<slug> — short links for the Facebook group posts
+    if (url.hostname.startsWith('go.')) return handleShortLink(url, request, env, ctx);
+
     if (url.pathname === '/api/geo') return handleGeo(url);
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
@@ -230,6 +233,54 @@ async function handleLookups(url, env) {
   } catch (err) {
     return json({ ok: false, error: String(err && err.message) }, 502);
   }
+}
+
+/* --------------------------------------------------------- short links */
+
+/**
+ * One slug per (post x group) so a lead can be traced to the exact post and
+ * group that produced it. Slugs live here rather than in a database so the
+ * redirect is a single edge hop with nothing to go wrong on launch day.
+ *
+ * slug: [post title, group, utm_content, utm_term]
+ */
+const LINKS = {
+  w1a: ['Just finished - full roof',        'East Patchogue Community',        'p1-justfinished',  'g-eastpatchogue'],
+  w1b: ['Once the crew leaves',             'Bohemia Ronkonkoma Sayville',     'p2-aftercare',     'g-bohemia'],
+  w1c: ['Ready for another LI winter',      'East Islip NY Uncensored',        'p3-winterready',   'g-eastislip'],
+  w1d: ['Most roofers say replace',         'Patchogue Long Island NY',        'p4-replacerepair', 'g-patchogue'],
+  w1e: ['Family / pumpkins',                'Centereach NY Community Group',   'p5-family',        'g-centereach'],
+  w1f: ['First company photo',              'East Moriches Community Posts',   'p6-crew',          'g-eastmoriches'],
+};
+
+const DEST = 'https://quote.jagg-roofing.com/';
+
+async function handleShortLink(url, request, env, ctx) {
+  const slug = url.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+
+  // bare domain or unknown slug: send them to the quote page rather than a 404
+  const entry = LINKS[slug];
+  const target = new URL(DEST);
+  target.searchParams.set('utm_source', 'facebook');
+  target.searchParams.set('utm_medium', 'fb_group');
+  target.searchParams.set('utm_campaign', 'rtw_jagg');
+  if (entry) {
+    target.searchParams.set('utm_content', entry[2]);
+    target.searchParams.set('utm_term', entry[3]);
+    target.searchParams.set('rtw_pid', slug);
+  }
+
+  const cf = request.cf || {};
+  console.log(JSON.stringify({
+    evt: 'click', slug, known: !!entry,
+    post: entry ? entry[0] : null, group: entry ? entry[1] : null,
+    city: cf.city || null, region: cf.region || null, country: cf.country || null,
+    ua: (request.headers.get('user-agent') || '').slice(0, 120),
+    ref: request.headers.get('referer') || null,
+    ts: nowIso(),
+  }));
+
+  return Response.redirect(target.toString(), 302);
 }
 
 /* ------------------------------------------- lead source history report */

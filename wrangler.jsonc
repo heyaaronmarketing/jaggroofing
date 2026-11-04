@@ -12,7 +12,8 @@
     "not_found_handling": "single-page-application"
   },
   "routes": [
-    { "pattern": "quote.jagg-roofing.com", "custom_domain": true }
+    { "pattern": "quote.jagg-roofing.com", "custom_domain": true },
+    { "pattern": "go.jagg-roofing.com", "custom_domain": true }
   ],
   "observability": { "enabled": true },
   "vars": {

@@ -136,8 +136,17 @@ export async function handleStats(url, env, LINKS) {
   const sixHoursAgo = new Date(now.getTime() - 6 * 3600 * 1000);
   const sixStamp = (() => { const p = partsIn(sixHoursAgo);
     return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`; })();
-  const silent = slugs.filter((s) => LINKS[s].at <= sixStamp
-    && !(all.bySlug[s] && (all.bySlug[s].clicks > 0 || all.bySlug[s].bots > 0)));
+  const alive = (s) => !!(all.bySlug[s] && (all.bySlug[s].clicks > 0 || all.bySlug[s].bots > 0));
+  // Only flag a post as missing when a sibling from the same day clearly did go
+  // out. Otherwise a day that simply started late reads as six failures, and a
+  // warning that cries wolf on launch day is worse than no warning.
+  const dayHasLife = {};
+  for (const s of slugs) {
+    const d = LINKS[s].at.slice(0, 10);
+    dayHasLife[d] = dayHasLife[d] || alive(s);
+  }
+  const silent = slugs.filter((s) => LINKS[s].at <= sixStamp && !alive(s)
+    && dayHasLife[LINKS[s].at.slice(0, 10)]);
   const upcoming = slugs.filter((s) => !isLive(s))
     .sort((a, b) => LINKS[a].at.localeCompare(LINKS[b].at)).slice(0, 4);
 
@@ -291,8 +300,8 @@ function page({ rolls, all, week, silent, upcoming, LINKS, nowLocal }) {
   const flags = [];
   if (silent.length) {
     flags.push(`<div class="flag warn"><b>${silent.length} post${silent.length === 1 ? ' has' : 's have'} no clicks at all`
-      + ` more than six hours after it was due.</b> Usually that means a group admin held or removed it, or it never`
-      + ` went out of the queue. Worth checking: `
+      + ` more than six hours after it was due.</b> Either it went out later than planned, a group admin held`
+      + ` or removed it, or it never left the queue. Worth checking: `
       + silent.map((s) => esc(LINKS[s].group)).join(', ') + '.</div>');
   }
   if (upcoming.length) {

@@ -18,6 +18,11 @@
     { "pattern": "go.jagg-roofing.com", "custom_domain": true }
   ],
   "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "jagg-ops",
+      "database_id": "bc8c5e75-3aa3-4197-a7ca-6aa073768d65",
+      "migrations_dir": "migrations" }
+  ],
   "vars": {
     "LEAD_SOURCE_NAME": "Hey Aaron",
     "CONTACT_TYPE_NAME": "Customer"

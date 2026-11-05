@@ -283,6 +283,13 @@ background:#C2410C;color:#fff;cursor:pointer}</style>
     { status: 401, headers: { 'content-type': 'text/html; charset=utf-8' } });
 }
 
+/** YYYY-MM-DD in Long Island local time, which is how the client thinks about days. */
+function localDay(d = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(d);
+}
+
 /* --------------------------------------------------------- short links */
 
 /**
@@ -332,8 +339,24 @@ async function handleShortLink(url, request, env, ctx) {
   }
 
   const cf = request.cf || {};
+  const ua = request.headers.get('user-agent') || '';
+  // Facebook, Slack and friends fetch every link for a preview card. Those are
+  // not people, and counting them would inflate every number on the dashboard.
+  const isBot = /bot|crawler|spider|facebookexternalhit|preview|slackbot|whatsapp|headless/i.test(ua);
+
+  if (env.DB) {
+    const now = new Date();
+    ctx.waitUntil(env.DB.prepare(
+      `INSERT INTO clicks (slug, ts, day, city, region, country, device, bot)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(slug, now.toISOString(), localDay(now), cf.city || null, cf.region || null,
+            cf.country || null, /mobile|android|iphone/i.test(ua) ? 'mobile' : 'desktop',
+            isBot ? 1 : 0)
+      .run().catch((e) => console.error('click insert failed', e && e.message)));
+  }
+
   console.log(JSON.stringify({
-    evt: 'click', slug, known: !!entry,
+    evt: 'click', slug, known: !!entry, bot: isBot,
     post: entry ? entry[0] : null, group: entry ? entry[1] : null,
     city: cf.city || null, region: cf.region || null, country: cf.country || null,
     ua: (request.headers.get('user-agent') || '').slice(0, 120),

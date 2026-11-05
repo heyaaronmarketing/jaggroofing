@@ -16,6 +16,8 @@
  *   NOTIFY_EMAIL       var, optional — where that fallback goes
  */
 
+import { handleStats } from './stats.js';
+
 const ACCULYNX = 'https://api.acculynx.com/api/v2';
 
 // Account-specific lookup ids, resolved once per isolate.
@@ -28,17 +30,27 @@ export default {
     // go.jagg-roofing.com/<slug> — short links for the Facebook group posts
     if (url.hostname.startsWith('go.')) return handleShortLink(url, request, env, ctx);
 
-    // The group board carries competitive data and the do-not-post list, so it
-    // stays private. The week-1 page is the client's own copy for review and
-    // must open without a password.
-    if (url.pathname.startsWith('/review/groups')) {
-      const gate = reviewGate(request, env);
-      if (gate) return gate;
+    // The group board carries competitive data and the do-not-post list, and
+    // the progress dashboard is internal, so both stay private. The week-1 page
+    // is the client's own copy for review and must open without a password.
+    // Gate narrowly by exact prefix — gating all of /review/* once locked the
+    // client out of their own review page.
+    for (const priv of ['/review/groups', '/review/stats']) {
+      if (url.pathname === priv || url.pathname.startsWith(priv + '/')
+          || url.pathname.startsWith(priv + '.')) {
+        const gate = reviewGate(request, env, priv);
+        if (gate) return gate;
+      }
+    }
+
+    if (url.pathname === '/review/stats' || url.pathname === '/review/stats/') {
+      return handleStats(url, env, LINKS);
     }
 
     if (url.pathname === '/api/geo') return handleGeo(url);
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
+    if (url.pathname === '/api/sync-leads') return handleSyncLeads(url, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -248,7 +260,7 @@ async function handleLookups(url, env) {
 const REVIEW_COOKIE = 'jagg_review';
 
 /** Returns a Response when the visitor should be stopped, otherwise null. */
-function reviewGate(request, env) {
+function reviewGate(request, env, scope) {
   const pw = env.REVIEW_PASSWORD || 'shingle';
   const url = new URL(request.url);
 
@@ -258,7 +270,7 @@ function reviewGate(request, env) {
       status: 302,
       headers: {
         location: to.pathname + to.search,
-        'set-cookie': `${REVIEW_COOKIE}=${pw}; Path=/review/groups; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
+        'set-cookie': `${REVIEW_COOKIE}=${pw}; Path=${scope}; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
       },
     });
   }
@@ -297,28 +309,30 @@ function localDay(d = new Date()) {
  * group that produced it. Slugs live here rather than in a database so the
  * redirect is a single edge hop with nothing to go wrong on launch day.
  *
- * slug: [post title, group, utm_content, utm_term]
+ * `members` and `at` exist so the dashboard can report reach and spot a post
+ * that was scheduled but never actually went out. Week 2 times are provisional
+ * until the VA confirms the groupposting.com queue.
  */
 const LINKS = {
-  w1a: ['Just finished - full roof',        'East Patchogue Community',        'p1-justfinished',  'g-eastpatchogue'],
-  w1b: ['Once the crew leaves',             'Bohemia Ronkonkoma Sayville',     'p2-aftercare',     'g-bohemia'],
-  w1c: ['Ready for another LI winter',      'East Islip NY Uncensored',        'p3-winterready',   'g-eastislip'],
-  w1d: ['Most roofers say replace',         'Patchogue Long Island NY',        'p4-replacerepair', 'g-patchogue'],
-  w1e: ['Family / pumpkins',                'Centereach NY Community Group',   'p5-family',        'g-centereach'],
-  w1f: ['First company photo',             'East Moriches Community Posts',   'p6-crew',          'g-eastmoriches'],
+  w1a: { post: 'Just finished - full roof',   group: 'East Patchogue Community',              content: 'p1-justfinished',  term: 'g-eastpatchogue',  members: 28900, at: '2026-11-05T13:00', week: 1 },
+  w1b: { post: 'Once the crew leaves',        group: 'Bohemia, Ronkonkoma, Sayville',         content: 'p2-aftercare',     term: 'g-bohemia',        members: 24100, at: '2026-11-05T14:00', week: 1 },
+  w1c: { post: 'Ready for another LI winter', group: 'East Islip NY Uncensored',              content: 'p3-winterready',   term: 'g-eastislip',      members: 4200,  at: '2026-11-05T15:00', week: 1 },
+  w1d: { post: 'Most roofers say replace',    group: 'Patchogue Long Island NY',              content: 'p4-replacerepair', term: 'g-patchogue',      members: 17000, at: '2026-11-06T13:00', week: 1 },
+  w1e: { post: 'Family / pumpkins',           group: 'Centereach NY Community Group',         content: 'p5-family',        term: 'g-centereach',     members: 21300, at: '2026-11-06T14:00', week: 1 },
+  w1f: { post: 'First company photo',         group: 'East Moriches Community Posts',         content: 'p6-crew',          term: 'g-eastmoriches',   members: 20800, at: '2026-11-06T15:00', week: 1 },
 
-  w2a: ['Four generations in Suffolk',      'Town of Babylon group',              'p7-generations',  'g-babylontown'],
-  w2b: ['As a father',                      'Babylon Village Connection',         'p8-asafather',    'g-babylonvillage'],
-  w2c: ['The socks photo',                  'West Islip Community',               'p9-socks',        'g-westislip'],
-  w2d: ['Just finished - full roof',        'Smithtown NY community page',        'p1-justfinished', 'g-smithtown'],
-  w2e: ['Once the crew leaves',             'Shirley and the Mastics',            'p2-aftercare',    'g-shirleymastics'],
-  w2f: ['Ready for another LI winter',      'Port Jeff, Setauket, Stony Brook',   'p3-winterready',  'g-portjeff'],
-  w2g: ['Most roofers say replace',         'Huntington Station Matters',         'p4-replacerepair','g-huntingtonstn'],
-  w2h: ['Four generations in Suffolk',      'Long Island, NY Business Owners',    'p7-generations',  'g-libusiness'],
-  w2i: ['Family / pumpkins',                'The Deer Park We all remember.',     'p5-family',       'g-deerpark'],
-  w2j: ['As a father',                      'Miller Place / Sound Beach',         'p8-asafather',    'g-millerplace'],
-  w2k: ['First company photo',              'Islip That & This',                  'p6-crew',         'g-islipthatthis'],
-  w2l: ['The socks photo',                  'Lake Grove/Centereach',              'p9-socks',        'g-lakegrove'],
+  w2a: { post: 'Four generations in Suffolk', group: 'Town of Babylon group',                 content: 'p7-generations',   term: 'g-babylontown',    members: 31100, at: '2026-11-10T13:00', week: 2 },
+  w2b: { post: 'As a father',                 group: 'Babylon Village Connection',            content: 'p8-asafather',     term: 'g-babylonvillage', members: 8200,  at: '2026-11-10T14:00', week: 2 },
+  w2c: { post: 'The socks photo',             group: 'West Islip Community',                  content: 'p9-socks',         term: 'g-westislip',      members: 6400,  at: '2026-11-10T15:00', week: 2 },
+  w2d: { post: 'Just finished - full roof',   group: 'Smithtown NY community page',           content: 'p1-justfinished',  term: 'g-smithtown',      members: 3800,  at: '2026-11-11T13:00', week: 2 },
+  w2e: { post: 'Once the crew leaves',        group: 'Shirley and the Mastics',               content: 'p2-aftercare',     term: 'g-shirleymastics', members: 57000, at: '2026-11-11T14:00', week: 2 },
+  w2f: { post: 'Ready for another LI winter', group: 'Port Jeff, Setauket, Stony Brook',      content: 'p3-winterready',   term: 'g-portjeff',       members: 6100,  at: '2026-11-11T15:00', week: 2 },
+  w2g: { post: 'Most roofers say replace',    group: 'Huntington Station Matters',            content: 'p4-replacerepair', term: 'g-huntingtonstn',  members: 5700,  at: '2026-11-12T13:00', week: 2 },
+  w2h: { post: 'Four generations in Suffolk', group: 'Long Island, NY Business Owners',       content: 'p7-generations',   term: 'g-libusiness',     members: 27500, at: '2026-11-12T14:00', week: 2 },
+  w2i: { post: 'Family / pumpkins',           group: 'The Deer Park We all remember.',        content: 'p5-family',        term: 'g-deerpark',       members: 12800, at: '2026-11-12T15:00', week: 2 },
+  w2j: { post: 'As a father',                 group: 'Miller Place / Sound Beach',            content: 'p8-asafather',     term: 'g-millerplace',    members: 3500,  at: '2026-11-13T13:00', week: 2 },
+  w2k: { post: 'First company photo',         group: 'Islip That & This',                     content: 'p6-crew',          term: 'g-islipthatthis',  members: 6000,  at: '2026-11-13T14:00', week: 2 },
+  w2l: { post: 'The socks photo',             group: 'Lake Grove/Centereach',                 content: 'p9-socks',         term: 'g-lakegrove',      members: 14700, at: '2026-11-13T15:00', week: 2 },
 };
 
 const DEST = 'https://quote.jagg-roofing.com/';
@@ -333,8 +347,8 @@ async function handleShortLink(url, request, env, ctx) {
   target.searchParams.set('utm_medium', 'fb_group');
   target.searchParams.set('utm_campaign', 'rtw_jagg');
   if (entry) {
-    target.searchParams.set('utm_content', entry[2]);
-    target.searchParams.set('utm_term', entry[3]);
+    target.searchParams.set('utm_content', entry.content);
+    target.searchParams.set('utm_term', entry.term);
     target.searchParams.set('rtw_pid', slug);
   }
 
@@ -357,7 +371,7 @@ async function handleShortLink(url, request, env, ctx) {
 
   console.log(JSON.stringify({
     evt: 'click', slug, known: !!entry, bot: isBot,
-    post: entry ? entry[0] : null, group: entry ? entry[1] : null,
+    post: entry ? entry.post : null, group: entry ? entry.group : null,
     city: cf.city || null, region: cf.region || null, country: cf.country || null,
     ua: (request.headers.get('user-agent') || '').slice(0, 120),
     ref: request.headers.get('referer') || null,
@@ -427,6 +441,96 @@ async function handleLeadSourceReport(url, env) {
     jobsInRange: ids.length, read, failed,
     bySource: Object.fromEntries(Object.entries(bySource).sort((a, b) => b[1] - a[1])),
     byMonth: Object.fromEntries(Object.entries(byMonth).sort()),
+  });
+}
+
+/* --------------------------------------------------- lead reconciliation */
+
+/**
+ * Pulls jobs from AccuLynx for a window and upserts the ones carrying our lead
+ * source into D1.
+ *
+ * The form already writes every lead it creates, so this is a reconciliation
+ * pass, not the primary path. It matters because the dashboard's numbers get
+ * emailed to the owner: this is how we prove the count matches the CRM rather
+ * than asking anyone to take it on faith. It also backfills leads created
+ * before the dashboard existed.
+ *
+ * AccuLynx cannot filter by lead source and does not expand it on the list
+ * endpoint, so each job in the window has to be read individually.
+ */
+async function handleSyncLeads(url, env) {
+  const token = url.searchParams.get('token') || '';
+  if (!env.DIAG_TOKEN || token !== env.DIAG_TOKEN) return json({ ok: false, error: 'Not found' }, 404);
+  if (!env.DB) return json({ ok: false, error: 'No database binding' }, 503);
+
+  const want = (env.LEAD_SOURCE_NAME || 'Hey Aaron').trim().toLowerCase();
+  const from = url.searchParams.get('from') || '2026-11-01';
+  const to = url.searchParams.get('to') || localDay();
+  const cap = Math.min(Number(url.searchParams.get('cap') || 300), 600);
+
+  const ids = [];
+  let start = 0;
+  while (ids.length < cap) {
+    const page = await acculynx(env,
+      `/jobs?startDate=${from}&endDate=${to}&dateFilterType=CreatedDate` +
+      `&pageSize=25&pageStartIndex=${start}&sortBy=CreatedDate&sortOrder=Ascending`);
+    const rows = listOf(page);
+    if (!rows.length) break;
+    for (const r of rows) if (r && r.id) ids.push(r.id);
+    if (rows.length < 25) break;
+    start += 25;
+  }
+
+  const matched = [];
+  let read = 0, failed = 0;
+  for (let i = 0; i < ids.length; i += 6) {
+    const batch = await Promise.all(ids.slice(i, i + 6).map((id) =>
+      acculynx(env, `/jobs/${id}`).catch(() => null)));
+    for (const j of batch) {
+      if (!j) { failed++; continue; }
+      read++;
+      const src = (j.leadSource && (j.leadSource.name || j.leadSource.description)) || '';
+      if (src.trim().toLowerCase() !== want) continue;
+
+      // Test jobs are deliberately named so they can be excluded and deleted.
+      const label = JSON.stringify(j).slice(0, 4000);
+      if (/ZZTEST/i.test(label)) continue;
+
+      const notes = String(j.notes || j.note || '');
+      const m = notes.match(/rtw_pid=([a-z0-9]+)/i);
+      const created = String(j.createdDate || j.created || j.createdOn || '');
+      const addr = j.locationAddress || j.jobAddress || {};
+      matched.push({
+        job_id: String(j.id),
+        created,
+        day: created.slice(0, 10) || localDay(),
+        lead_source: src,
+        slug: m ? m[1].toLowerCase() : null,
+        town: addr.city || null,
+        trade: (listOf(j.tradeTypes).map(nameOf).filter(Boolean).join(', ')) || null,
+      });
+    }
+  }
+
+  if (matched.length) {
+    await env.DB.batch(matched.map((r) => env.DB.prepare(
+      `INSERT OR REPLACE INTO leads
+         (job_id, created, day, lead_source, slug, town, trade, synced_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(r.job_id, r.created, r.day, r.lead_source, r.slug, r.town, r.trade,
+            new Date().toISOString())));
+  }
+
+  const have = await env.DB.prepare(
+    'SELECT COUNT(*) AS n, SUM(CASE WHEN slug IS NULL THEN 1 ELSE 0 END) AS untraced FROM leads').first();
+
+  return json({
+    ok: true, from, to, leadSource: env.LEAD_SOURCE_NAME || 'Hey Aaron',
+    jobsInWindow: ids.length, read, failed,
+    matchedThisSource: matched.length,
+    leadsInDashboard: have && have.n, untraced: have && have.untraced,
+    slugs: matched.reduce((a, r) => { const k = r.slug || '(none)'; a[k] = (a[k] || 0) + 1; return a; }, {}),
   });
 }
 
@@ -501,8 +605,26 @@ async function handleLead(request, env, ctx) {
     if (trades.length) jobBody.tradeTypes = trades;
 
     const job = await acculynx(env, '/jobs', { method: 'POST', body: JSON.stringify(jobBody) });
+    const jobId = job && (job.id || job.jobId);
 
-    return json({ ok: true, jobId: job && (job.id || job.jobId) });
+    // Record the lead locally too. The form knows which post produced it; by
+    // the time it reaches AccuLynx that is buried in a free-text note, so this
+    // is the only place the attribution is cheap and certain.
+    if (env.DB && jobId) {
+      const now = new Date();
+      let slug = null;
+      try { slug = new URLSearchParams(String(body.utm || '').replace(/^\?/, '')).get('rtw_pid'); } catch { /* ignore */ }
+      ctx.waitUntil(env.DB.prepare(
+        `INSERT OR REPLACE INTO leads
+           (job_id, created, day, lead_source, slug, town, trade, synced_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+        .bind(String(jobId), now.toISOString(), localDay(now),
+              env.LEAD_SOURCE_NAME || null, slug, city || null, service || null,
+              now.toISOString())
+        .run().catch((e) => console.error('lead insert failed', e && e.message)));
+    }
+
+    return json({ ok: true, jobId });
   } catch (err) {
     console.error('AccuLynx submission failed', err && err.message);
     // Never lose the lead because the CRM is down.

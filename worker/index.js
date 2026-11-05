@@ -28,8 +28,10 @@ export default {
     // go.jagg-roofing.com/<slug> — short links for the Facebook group posts
     if (url.hostname.startsWith('go.')) return handleShortLink(url, request, env, ctx);
 
-    // /review/* is client-facing but not public
-    if (url.pathname.startsWith('/review')) {
+    // The group board carries competitive data and the do-not-post list, so it
+    // stays private. The week-1 page is the client's own copy for review and
+    // must open without a password.
+    if (url.pathname.startsWith('/review/groups')) {
       const gate = reviewGate(request, env);
       if (gate) return gate;
     }
@@ -256,7 +258,7 @@ function reviewGate(request, env) {
       status: 302,
       headers: {
         location: to.pathname + to.search,
-        'set-cookie': `${REVIEW_COOKIE}=${pw}; Path=/review; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
+        'set-cookie': `${REVIEW_COOKIE}=${pw}; Path=/review/groups; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
       },
     });
   }

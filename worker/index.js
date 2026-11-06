@@ -35,7 +35,7 @@ export default {
     // is the client's own copy for review and must open without a password.
     // Gate narrowly by exact prefix — gating all of /review/* once locked the
     // client out of their own review page.
-    for (const priv of ['/review/groups', '/review/stats']) {
+    for (const priv of ['/review/groups', '/review/stats', '/review/join']) {
       if (url.pathname === priv || url.pathname.startsWith(priv + '/')
           || url.pathname.startsWith(priv + '.')) {
         const gate = reviewGate(request, env, priv);
@@ -52,6 +52,7 @@ export default {
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
     if (url.pathname === '/api/sync-leads') return handleSyncLeads(url, env);
     if (url.pathname === '/api/schedule') return handleSchedule(request, env);
+    if (url.pathname === '/api/joins') return handleJoins(request, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -515,6 +516,54 @@ async function handleSchedule(request, env) {
     await env.DB.prepare('DELETE FROM placements_done WHERE slug = ?').bind(slug).run();
   }
   return json({ ok: true, slug, done: !!body.done });
+}
+
+/* ------------------------------------------------------- join tracking */
+
+/**
+ * Which groups the VA has requested to join.
+ *
+ * Open like the posting checklist, and for the same reason. Status is a free
+ * string rather than a boolean because a join request can be sent, accepted or
+ * declined, and "declined" is the one worth keeping — it stops the group being
+ * handed back to the VA next week.
+ */
+async function handleJoins(request, env) {
+  if (!env.DB) return json({ ok: false, error: 'No database binding' }, 503);
+
+  if (request.method === 'GET') {
+    const rs = await env.DB.prepare(
+      'SELECT gid, status, done_at, done_by FROM group_joins').all();
+    const rows = {};
+    for (const r of rs.results || []) {
+      rows[r.gid] = { status: r.status, at: r.done_at, by: r.done_by };
+    }
+    return json({ ok: true, joins: rows });
+  }
+
+  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'Bad request' }, 400); }
+
+  const gid = String(body.gid || '').slice(0, 80);
+  if (!/^[a-z0-9-]{3,80}$/.test(gid)) return json({ ok: false, error: 'Bad group id' }, 400);
+  const status = String(body.status || '');
+  const by = String(body.by || '').slice(0, 40) || null;
+
+  if (!status) {
+    await env.DB.prepare('DELETE FROM group_joins WHERE gid = ?').bind(gid).run();
+    return json({ ok: true, gid, status: null });
+  }
+  if (!['requested', 'joined', 'declined'].includes(status)) {
+    return json({ ok: false, error: 'Bad status' }, 400);
+  }
+  await env.DB.prepare(
+    `INSERT INTO group_joins (gid, status, done_at, done_by) VALUES (?, ?, ?, ?)
+     ON CONFLICT(gid) DO UPDATE SET status = excluded.status,
+       done_at = excluded.done_at, done_by = excluded.done_by`)
+    .bind(gid, status, new Date().toISOString(), by).run();
+  return json({ ok: true, gid, status });
 }
 
 /* --------------------------------------------------- lead reconciliation */

@@ -51,7 +51,7 @@ export default {
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
     if (url.pathname === '/api/sync-leads') return handleSyncLeads(url, env);
-    if (url.pathname === '/api/schedule') return handleSchedule(request, url, env);
+    if (url.pathname === '/api/schedule') return handleSchedule(request, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -331,11 +331,11 @@ function localDay(d = new Date()) {
  */
 const LINKS = {
   w1a:   { post: 'Just finished - full roof',   group: 'Shirley and the Mastics',                      content: 'p1-justfinished',   term: 'g-shirleymastics',       members: 57000,  at: '2026-11-05T19:00', week: 1 },
-  w1a2:  { post: 'Just finished - full roof',   group: 'Town of Babylon group',                        content: 'p1-justfinished',   term: 'g-babylontown',          members: 31100,  at: '2026-11-06T10:00', week: 1 },
-  w1a3:  { post: 'Just finished - full roof',   group: 'Coram Community News',                         content: 'p1-justfinished',   term: 'g-coram',                members: 8000,   at: '2026-11-06T11:00', week: 1 },
-  w1b:   { post: 'Once the crew leaves',        group: 'Centereach NY Community Group',                content: 'p2-aftercare',      term: 'g-centereach',           members: 21300,  at: '2026-11-06T13:00', week: 1 },
-  w1b2:  { post: 'Once the crew leaves',        group: 'Center Moriches Community Posts',              content: 'p2-aftercare',      term: 'g-centermoriches',       members: 10500,  at: '2026-11-06T14:00', week: 1 },
-  w1b3:  { post: 'Once the crew leaves',        group: 'Everything Babylon',                           content: 'p2-aftercare',      term: 'g-everythingbabylon',    members: 6300,   at: '2026-11-06T15:00', week: 1 },
+  w1a2:  { post: 'Just finished - full roof',   group: 'Town of Babylon group',                        content: 'p1-justfinished',   term: 'g-babylontown',          members: 31100,  at: '2026-11-05T23:00', week: 1 },
+  w1a3:  { post: 'Just finished - full roof',   group: 'Coram Community News',                         content: 'p1-justfinished',   term: 'g-coram',                members: 8000,   at: '2026-11-06T00:00', week: 1 },
+  w1b:   { post: 'Once the crew leaves',        group: 'Centereach NY Community Group',                content: 'p2-aftercare',      term: 'g-centereach',           members: 21300,  at: '2026-11-06T14:00', week: 1 },
+  w1b2:  { post: 'Once the crew leaves',        group: 'Center Moriches Community Posts',              content: 'p2-aftercare',      term: 'g-centermoriches',       members: 10500,  at: '2026-11-06T15:00', week: 1 },
+  w1b3:  { post: 'Once the crew leaves',        group: 'Everything Babylon',                           content: 'p2-aftercare',      term: 'g-everythingbabylon',    members: 6300,   at: '2026-11-06T16:00', week: 1 },
   w1c:   { post: 'Ready for another LI winter', group: 'WHAT\'S UP MONTAUK',                           content: 'p3-winterready',    term: 'g-montauk',              members: 22600,  at: '2026-11-09T10:00', week: 1 },
   w1c2:  { post: 'Ready for another LI winter', group: 'Westhampton Beach Area Community LOCAL',       content: 'p3-winterready',    term: 'g-westhamptonbeach',     members: 4200,   at: '2026-11-09T11:00', week: 1 },
   w1c3:  { post: 'Ready for another LI winter', group: 'Wake Up Lake!',                                content: 'p3-winterready',    term: 'g-wakeuplake',           members: 6700,   at: '2026-11-09T13:00', week: 1 },
@@ -479,11 +479,10 @@ async function handleLeadSourceReport(url, env) {
 /**
  * Tracks which placements have actually been queued in groupposting.com.
  *
- * Reads are open so the review page can show state to anyone holding the
- * link. Writes need the key that the staff URL carries in ?k=, which keeps
- * the client's copy of the page read-only without needing a second page.
+ * Open to anyone holding the link, both reads and writes. See the note on the
+ * write path for why the key gate was taken out.
  */
-async function handleSchedule(request, url, env) {
+async function handleSchedule(request, env) {
   if (!env.DB) return json({ ok: false, error: 'No database binding' }, 503);
 
   if (request.method === 'GET') {
@@ -499,11 +498,10 @@ async function handleSchedule(request, url, env) {
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'Bad request' }, 400); }
 
-  const key = String(body.key || url.searchParams.get('k') || '');
-  if (!env.SCHEDULE_KEY || key !== env.SCHEDULE_KEY) {
-    return json({ ok: false, error: 'Not authorised' }, 403);
-  }
-
+  // No key check. Gating writes behind a ?k= meant bookmarks and copied links
+  // silently disabled every button, which made the feature look broken three
+  // times running. The stakes here are a checkbox on an unlisted page, and
+  // reliability is worth more than stopping an accidental toggle.
   const slug = String(body.slug || '').toLowerCase();
   if (!LINKS[slug]) return json({ ok: false, error: 'Unknown placement' }, 400);
   const by = String(body.by || '').slice(0, 40) || null;

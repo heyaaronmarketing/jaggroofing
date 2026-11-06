@@ -347,13 +347,20 @@ const LINKS = {
   w1f:   { post: 'First company photo',         group: 'MT. SINAI/MILLER PLACE COMMUNITY BUSINESS',    content: 'p6-crew',           term: 'g-mtsinaimillerplace',   members: 9300,   at: '2026-11-10T14:00', week: 1 },
   w1f2:  { post: 'First company photo',         group: 'Islip That & This',                            content: 'p6-crew',           term: 'g-islipthatthis',        members: 6000,   at: '2026-11-10T15:00', week: 1 },
   w1f3:  { post: 'First company photo',         group: 'Brightwaters/Bay Shore Community Uncensored',  content: 'p6-crew',           term: 'g-brightwaters',         members: 6600,   at: '2026-11-10T17:00', week: 1 },
-  w2a:   { post: 'Four generations in Suffolk', group: 'Babylon Village Connection',                   content: 'p7-generations',    term: 'g-babylonvillage',       members: 8200,   at: '2026-11-12T13:00', week: 2 },
-  w2b:   { post: 'As a father',                 group: 'North Babylon Community Group',                content: 'p8-asafather',      term: 'g-northbabylon',         members: 7200,   at: '2026-11-12T14:00', week: 2 },
-  w2c:   { post: 'The socks photo',             group: 'Huntington Station Matters',                   content: 'p9-socks',          term: 'g-huntingtonstn',        members: 5700,   at: '2026-11-12T15:00', week: 2 },
-  w2d:   { post: 'Four generations in Suffolk', group: 'Amityville Families & Community Group',        content: 'p7-generations',    term: 'g-amityville',           members: 5300,   at: '2026-11-13T13:00', week: 2 },
-  w2e:   { post: 'As a father',                 group: 'Happy Days In Hampton Bays',                   content: 'p8-asafather',      term: 'g-hamptonbays',          members: 4500,   at: '2026-11-13T14:00', week: 2 },
-  w2f:   { post: 'The socks photo',             group: 'SHIRLEY - MASTIC\'S - MORICHES - SMITH POINT', content: 'p9-socks',          term: 'g-shirleysmithpoint',    members: 7300,   at: '2026-11-13T15:00', week: 2 },
+  w2a:   { post: 'Four generations in Suffolk', group: 'East Patchogue Community',                     content: 'p7-generations',    term: 'g-eastpatchoguecommu',   members: 28900,  at: '2026-11-11T10:00', week: 2 },
+  w2b:   { post: 'As a father',                 group: 'Patchogue Community NY',                       content: 'p8-asafather',      term: 'g-patchoguecommunity',   members: 14000,  at: '2026-11-11T13:00', week: 2 },
+  w2c:   { post: 'The socks photo',             group: 'Islip Terrace And All Of The Islips',          content: 'p9-socks',          term: 'g-islipterraceandall',   members: 13300,  at: '2026-11-11T15:00', week: 2 },
+  w2d:   { post: 'Four generations in Suffolk', group: 'The People Of Lindenhurst',                    content: 'p7-generations',    term: 'g-thepeopleoflindenh',   members: 9400,   at: '2026-11-11T17:00', week: 2 },
+  w2e:   { post: 'As a father',                 group: 'Babylon Village Connection',                   content: 'p8-asafather',      term: 'g-babylonvillageconn',   members: 8200,   at: '2026-11-12T10:00', week: 2 },
+  w2f:   { post: 'The socks photo',             group: 'Parents of Huntington',                        content: 'p9-socks',          term: 'g-parentsofhuntingto',   members: 7400,   at: '2026-11-12T13:00', week: 2 },
+  w2g:   { post: 'Four generations in Suffolk', group: 'North Babylon Community Group',                content: 'p7-generations',    term: 'g-northbabyloncommun',   members: 7200,   at: '2026-11-12T15:00', week: 2 },
+  w2h:   { post: 'As a father',                 group: 'SHIRLEY - MASTIC’S - MORICHES - SMITH POINT',  content: 'p8-asafather',      term: 'g-shirleymasticsmori',   members: 7300,   at: '2026-11-12T17:00', week: 2 },
+  w2i:   { post: 'The socks photo',             group: 'Huntington Station Matters',                   content: 'p9-socks',          term: 'g-huntingtonstationm',   members: 5700,   at: '2026-11-13T10:00', week: 2 },
+  w2j:   { post: 'Four generations in Suffolk', group: 'Amityville Families & Community Group',        content: 'p7-generations',    term: 'g-amityvillefamilies',   members: 5300,   at: '2026-11-13T13:00', week: 2 },
+  w2k:   { post: 'As a father',                 group: 'Happy Days In Hampton Bays',                   content: 'p8-asafather',      term: 'g-happydaysinhampton',   members: 4500,   at: '2026-11-13T15:00', week: 2 },
+  w2l:   { post: 'The socks photo',             group: 'Miller Place Parents & Communities',           content: 'p9-socks',          term: 'g-millerplaceparents',   members: 2700,   at: '2026-11-13T17:00', week: 2 },
 };
+
 
 
 

@@ -391,11 +391,11 @@ async function handleShortLink(url, request, env, ctx) {
   if (env.DB) {
     const now = new Date();
     ctx.waitUntil(env.DB.prepare(
-      `INSERT INTO clicks (slug, ts, day, city, region, country, device, bot)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      `INSERT INTO clicks (slug, ts, day, city, region, country, device, bot, ua)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(slug, now.toISOString(), localDay(now), cf.city || null, cf.region || null,
             cf.country || null, /mobile|android|iphone/i.test(ua) ? 'mobile' : 'desktop',
-            isBot ? 1 : 0)
+            isBot ? 1 : 0, ua.slice(0, 200) || null)
       .run().catch((e) => console.error('click insert failed', e && e.message)));
   }
 

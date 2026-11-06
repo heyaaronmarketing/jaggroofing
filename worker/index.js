@@ -51,6 +51,7 @@ export default {
     if (url.pathname === '/api/lookups') return handleLookups(url, env);
     if (url.pathname === '/api/lead-source-report') return handleLeadSourceReport(url, env);
     if (url.pathname === '/api/sync-leads') return handleSyncLeads(url, env);
+    if (url.pathname === '/api/schedule') return handleSchedule(request, url, env);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -471,6 +472,51 @@ async function handleLeadSourceReport(url, env) {
     bySource: Object.fromEntries(Object.entries(bySource).sort((a, b) => b[1] - a[1])),
     byMonth: Object.fromEntries(Object.entries(byMonth).sort()),
   });
+}
+
+/* ------------------------------------------------- scheduling checklist */
+
+/**
+ * Tracks which placements have actually been queued in groupposting.com.
+ *
+ * Reads are open so the review page can show state to anyone holding the
+ * link. Writes need the key that the staff URL carries in ?k=, which keeps
+ * the client's copy of the page read-only without needing a second page.
+ */
+async function handleSchedule(request, url, env) {
+  if (!env.DB) return json({ ok: false, error: 'No database binding' }, 503);
+
+  if (request.method === 'GET') {
+    const rs = await env.DB.prepare(
+      'SELECT slug, done_at, done_by FROM placements_done').all();
+    const done = {};
+    for (const r of rs.results || []) done[r.slug] = { at: r.done_at, by: r.done_by };
+    return json({ ok: true, done });
+  }
+
+  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'Bad request' }, 400); }
+
+  const key = String(body.key || url.searchParams.get('k') || '');
+  if (!env.SCHEDULE_KEY || key !== env.SCHEDULE_KEY) {
+    return json({ ok: false, error: 'Not authorised' }, 403);
+  }
+
+  const slug = String(body.slug || '').toLowerCase();
+  if (!LINKS[slug]) return json({ ok: false, error: 'Unknown placement' }, 400);
+  const by = String(body.by || '').slice(0, 40) || null;
+
+  if (body.done) {
+    await env.DB.prepare(
+      `INSERT INTO placements_done (slug, done_at, done_by) VALUES (?, ?, ?)
+       ON CONFLICT(slug) DO UPDATE SET done_at = excluded.done_at, done_by = excluded.done_by`)
+      .bind(slug, new Date().toISOString(), by).run();
+  } else {
+    await env.DB.prepare('DELETE FROM placements_done WHERE slug = ?').bind(slug).run();
+  }
+  return json({ ok: true, slug, done: !!body.done });
 }
 
 /* --------------------------------------------------- lead reconciliation */

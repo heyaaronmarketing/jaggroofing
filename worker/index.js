@@ -313,27 +313,49 @@ function localDay(d = new Date()) {
  * that was scheduled but never actually went out. Week 2 times are provisional
  * until the VA confirms the groupposting.com queue.
  */
+/**
+ * One slug per (post x group) so a lead traces to the exact post and group that
+ * produced it. Slugs live here rather than in a database so the redirect is a
+ * single edge hop with nothing to go wrong on launch day.
+ *
+ * Group selection comes from Ride the Wave's own export: these are the groups
+ * that accepted four or more of their posts and were still accepting in
+ * October. Repeat tolerance is not proof of conversion - JAGG's ~10 leads a
+ * month across 100 groups is far too thin to attribute - but it is the only
+ * hard evidence there is, and it beats picking by member count.
+ *
+ * Three groups per post, six placements a day. Six a day was Ride the Wave's
+ * observed ceiling across 258 posts; going past it on a warm account is an
+ * untested risk for no measured gain.
+ */
 const LINKS = {
-  w1a: { post: 'Just finished - full roof',   group: 'East Patchogue Community',              content: 'p1-justfinished',  term: 'g-eastpatchogue',  members: 28900, at: '2026-11-05T13:00', week: 1 },
-  w1b: { post: 'Once the crew leaves',        group: 'Bohemia, Ronkonkoma, Sayville',         content: 'p2-aftercare',     term: 'g-bohemia',        members: 24100, at: '2026-11-05T14:00', week: 1 },
-  w1c: { post: 'Ready for another LI winter', group: 'East Islip NY Uncensored',              content: 'p3-winterready',   term: 'g-eastislip',      members: 4200,  at: '2026-11-05T15:00', week: 1 },
-  w1d: { post: 'Most roofers say replace',    group: 'Patchogue Long Island NY',              content: 'p4-replacerepair', term: 'g-patchogue',      members: 17000, at: '2026-11-06T13:00', week: 1 },
-  w1e: { post: 'Family / pumpkins',           group: 'Centereach NY Community Group',         content: 'p5-family',        term: 'g-centereach',     members: 21300, at: '2026-11-06T14:00', week: 1 },
-  w1f: { post: 'First company photo',         group: 'East Moriches Community Posts',         content: 'p6-crew',          term: 'g-eastmoriches',   members: 20800, at: '2026-11-06T15:00', week: 1 },
-
-  w2a: { post: 'Four generations in Suffolk', group: 'Town of Babylon group',                 content: 'p7-generations',   term: 'g-babylontown',    members: 31100, at: '2026-11-10T13:00', week: 2 },
-  w2b: { post: 'As a father',                 group: 'Babylon Village Connection',            content: 'p8-asafather',     term: 'g-babylonvillage', members: 8200,  at: '2026-11-10T14:00', week: 2 },
-  w2c: { post: 'The socks photo',             group: 'West Islip Community',                  content: 'p9-socks',         term: 'g-westislip',      members: 6400,  at: '2026-11-10T15:00', week: 2 },
-  w2d: { post: 'Just finished - full roof',   group: 'Smithtown NY community page',           content: 'p1-justfinished',  term: 'g-smithtown',      members: 3800,  at: '2026-11-11T13:00', week: 2 },
-  w2e: { post: 'Once the crew leaves',        group: 'Shirley and the Mastics',               content: 'p2-aftercare',     term: 'g-shirleymastics', members: 57000, at: '2026-11-11T14:00', week: 2 },
-  w2f: { post: 'Ready for another LI winter', group: 'Port Jeff, Setauket, Stony Brook',      content: 'p3-winterready',   term: 'g-portjeff',       members: 6100,  at: '2026-11-11T15:00', week: 2 },
-  w2g: { post: 'Most roofers say replace',    group: 'Huntington Station Matters',            content: 'p4-replacerepair', term: 'g-huntingtonstn',  members: 5700,  at: '2026-11-12T13:00', week: 2 },
-  w2h: { post: 'Four generations in Suffolk', group: 'Long Island, NY Business Owners',       content: 'p7-generations',   term: 'g-libusiness',     members: 27500, at: '2026-11-12T14:00', week: 2 },
-  w2i: { post: 'Family / pumpkins',           group: 'The Deer Park We all remember.',        content: 'p5-family',        term: 'g-deerpark',       members: 12800, at: '2026-11-12T15:00', week: 2 },
-  w2j: { post: 'As a father',                 group: 'Miller Place / Sound Beach',            content: 'p8-asafather',     term: 'g-millerplace',    members: 3500,  at: '2026-11-13T13:00', week: 2 },
-  w2k: { post: 'First company photo',         group: 'Islip That & This',                     content: 'p6-crew',          term: 'g-islipthatthis',  members: 6000,  at: '2026-11-13T14:00', week: 2 },
-  w2l: { post: 'The socks photo',             group: 'Lake Grove/Centereach',                 content: 'p9-socks',         term: 'g-lakegrove',      members: 14700, at: '2026-11-13T15:00', week: 2 },
+  w1a:   { post: 'Just finished - full roof',   group: 'Shirley and the Mastics',                      content: 'p1-justfinished',   term: 'g-shirleymastics',       members: 57000,  at: '2026-11-06T10:00', week: 1 },
+  w1a2:  { post: 'Just finished - full roof',   group: 'Town of Babylon group',                        content: 'p1-justfinished',   term: 'g-babylontown',          members: 31100,  at: '2026-11-06T11:00', week: 1 },
+  w1a3:  { post: 'Just finished - full roof',   group: 'Coram Community News',                         content: 'p1-justfinished',   term: 'g-coram',                members: 8000,   at: '2026-11-06T13:00', week: 1 },
+  w1b:   { post: 'Once the crew leaves',        group: 'Centereach NY Community Group',                content: 'p2-aftercare',      term: 'g-centereach',           members: 21300,  at: '2026-11-06T14:00', week: 1 },
+  w1b2:  { post: 'Once the crew leaves',        group: 'Center Moriches Community Posts',              content: 'p2-aftercare',      term: 'g-centermoriches',       members: 10500,  at: '2026-11-06T15:00', week: 1 },
+  w1b3:  { post: 'Once the crew leaves',        group: 'Everything Babylon',                           content: 'p2-aftercare',      term: 'g-everythingbabylon',    members: 6300,   at: '2026-11-06T17:00', week: 1 },
+  w1c:   { post: 'Ready for another LI winter', group: 'WHAT\'S UP MONTAUK',                           content: 'p3-winterready',    term: 'g-montauk',              members: 22600,  at: '2026-11-09T10:00', week: 1 },
+  w1c2:  { post: 'Ready for another LI winter', group: 'Westhampton Beach Area Community LOCAL',       content: 'p3-winterready',    term: 'g-westhamptonbeach',     members: 4200,   at: '2026-11-09T11:00', week: 1 },
+  w1c3:  { post: 'Ready for another LI winter', group: 'Wake Up Lake!',                                content: 'p3-winterready',    term: 'g-wakeuplake',           members: 6700,   at: '2026-11-09T13:00', week: 1 },
+  w1d:   { post: 'Most roofers say replace',    group: 'Bohemia, Ronkonkoma, Sayville',                content: 'p4-replacerepair',  term: 'g-bohemia',              members: 24100,  at: '2026-11-09T14:00', week: 1 },
+  w1d2:  { post: 'Most roofers say replace',    group: 'The Deer Park We all remember',                content: 'p4-replacerepair',  term: 'g-deerpark',             members: 12800,  at: '2026-11-09T15:00', week: 1 },
+  w1d3:  { post: 'Most roofers say replace',    group: 'Positively East Islip',                        content: 'p4-replacerepair',  term: 'g-positivelyeastislip',  members: 6300,   at: '2026-11-09T17:00', week: 1 },
+  w1e:   { post: 'Family / pumpkins',           group: 'Patchogue-Medford Mom\'s & Dad\'s Group',      content: 'p5-family',         term: 'g-patchoguemedmoms',     members: 6600,   at: '2026-11-10T10:00', week: 1 },
+  w1e2:  { post: 'Family / pumpkins',           group: 'Shirley/Mastics Community Group',              content: 'p5-family',         term: 'g-shirleymasticscomm',   members: 19800,  at: '2026-11-10T11:00', week: 1 },
+  w1e3:  { post: 'Family / pumpkins',           group: 'Sayville Moms and Dads Uncensored',            content: 'p5-family',         term: 'g-sayvillemoms',         members: 2400,   at: '2026-11-10T13:00', week: 1 },
+  w1f:   { post: 'First company photo',         group: 'MT. SINAI/MILLER PLACE COMMUNITY BUSINESS',    content: 'p6-crew',           term: 'g-mtsinaimillerplace',   members: 9300,   at: '2026-11-10T14:00', week: 1 },
+  w1f2:  { post: 'First company photo',         group: 'Islip That & This',                            content: 'p6-crew',           term: 'g-islipthatthis',        members: 6000,   at: '2026-11-10T15:00', week: 1 },
+  w1f3:  { post: 'First company photo',         group: 'Brightwaters/Bay Shore Community Uncensored',  content: 'p6-crew',           term: 'g-brightwaters',         members: 6600,   at: '2026-11-10T17:00', week: 1 },
+  w2a:   { post: 'Four generations in Suffolk', group: 'Babylon Village Connection',                   content: 'p7-generations',    term: 'g-babylonvillage',       members: 8200,   at: '2026-11-12T13:00', week: 2 },
+  w2b:   { post: 'As a father',                 group: 'North Babylon Community Group',                content: 'p8-asafather',      term: 'g-northbabylon',         members: 7200,   at: '2026-11-12T14:00', week: 2 },
+  w2c:   { post: 'The socks photo',             group: 'Huntington Station Matters',                   content: 'p9-socks',          term: 'g-huntingtonstn',        members: 5700,   at: '2026-11-12T15:00', week: 2 },
+  w2d:   { post: 'Four generations in Suffolk', group: 'Amityville Families & Community Group',        content: 'p7-generations',    term: 'g-amityville',           members: 5300,   at: '2026-11-13T13:00', week: 2 },
+  w2e:   { post: 'As a father',                 group: 'Happy Days In Hampton Bays',                   content: 'p8-asafather',      term: 'g-hamptonbays',          members: 4500,   at: '2026-11-13T14:00', week: 2 },
+  w2f:   { post: 'The socks photo',             group: 'SHIRLEY - MASTIC\'S - MORICHES - SMITH POINT', content: 'p9-socks',          term: 'g-shirleysmithpoint',    members: 7300,   at: '2026-11-13T15:00', week: 2 },
 };
+
+
 
 const DEST = 'https://quote.jagg-roofing.com/';
 

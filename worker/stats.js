@@ -313,6 +313,10 @@ function page({ rolls, all, week, silent, upcoming, LINKS, nowLocal }) {
 
   const email = emailText(week, all, LINKS);
 
+  const centralClock = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(new Date());
+
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
@@ -422,7 +426,8 @@ textarea{width:100%;min-height:270px;font:inherit;font-size:12.5px;line-height:1
   </div>
 </div>
 <p class="stamp">Updated ${esc(prettyDay(nowLocal.year + '-' + nowLocal.month + '-' + nowLocal.day))}
-  at ${esc(nowLocal.hour + ':' + nowLocal.minute)} Eastern. Reload for current numbers.
+  at ${esc(centralClock)} Central (${esc(nowLocal.hour + ':' + nowLocal.minute)} Eastern).
+  Reload for current numbers. Days are Long Island days, which is where the leads come from.
   Preview fetches by Facebook are counted separately and never shown as clicks.</p>
 
 <script>

@@ -346,15 +346,21 @@ var IMAGES=["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQYFBAcG
 
   var buttons = Array.prototype.slice.call(document.querySelectorAll('.done'));
   function paint(b, rec){
+    var stat = b.parentElement.querySelector('.pstat');
     if (rec) {
       b.setAttribute('aria-pressed', 'true');
-      var when = new Date(rec.at).toLocaleString('en-US',
-        { timeZone: 'America/New_York', month: 'short', day: 'numeric',
-          hour: 'numeric', minute: '2-digit' });
-      b.textContent = 'Scheduled · ' + when + (rec.by ? ' · ' + rec.by : '');
+      b.textContent = '\u2713 Scheduled';
+      if (stat) {
+        var when = new Date(rec.at).toLocaleString('en-US',
+          { timeZone: 'America/New_York', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit' });
+        stat.textContent = 'Queued ' + when + ' ET' + (rec.by ? ' by ' + rec.by : '');
+        stat.hidden = false;
+      }
     } else {
       b.setAttribute('aria-pressed', 'false');
       b.textContent = 'Mark scheduled';
+      if (stat) { stat.textContent = ''; stat.hidden = true; }
     }
   }
 

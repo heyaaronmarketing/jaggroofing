@@ -24,12 +24,21 @@ h1,h2{margin:0;text-wrap:balance}
 .top p{margin:8px 0 0;color:#C3CCDA;font-size:14px}
 .offer{display:inline-block;margin-top:14px;background:var(--accent);color:#fff;
  font-size:13px;font-weight:700;padding:8px 14px;border-radius:8px}
-.wnav{max-width:760px;margin:18px auto 0;display:flex;gap:6px;flex-wrap:wrap;padding-bottom:0}
-.wtab{font-size:13px;font-weight:700;text-decoration:none;color:#C3CCDA;
- padding:10px 16px;border-radius:9px 9px 0 0;background:rgba(255,255,255,.08)}
+.wnav{max-width:760px;margin:18px auto 0;display:flex;gap:4px;align-items:flex-end;
+ flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 0 0 0}
+.wnav::-webkit-scrollbar{display:none}
+.wtab{font-size:13px;font-weight:700;text-decoration:none;color:#C3CCDA;white-space:nowrap;
+ padding:10px 11px;border-radius:9px 9px 0 0;background:rgba(255,255,255,.08);flex:0 0 auto}
 .wtab:hover{background:rgba(255,255,255,.16);color:#fff}
 .wtab.on{background:var(--ground);color:var(--ink)}
 .wtab:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+/* the research board is staff-only, so it sits apart from the week tabs */
+.research{margin-left:auto;flex:0 0 auto;font-size:12px;font-weight:700;white-space:nowrap;
+ text-decoration:none;color:#9AA7BC;padding:9px 11px;border-radius:9px 9px 0 0;
+ border:1px solid rgba(255,255,255,.18);border-bottom:0}
+.research:hover{color:#fff;background:rgba(255,255,255,.1)}
+.research:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+@media (max-width:700px){.research{margin-left:5px}}
 .wrap{max-width:760px;margin:0 auto;padding:20px 22px 80px}
 .whobar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);
  border:1px solid var(--line);border-radius:10px;padding:11px 14px;box-shadow:var(--shadow);margin-bottom:8px}
@@ -95,7 +104,7 @@ a.lnk:hover{text-decoration:underline}
   <p>42 posts across 5 days · 406,300 members · all times Central</p>
   <div class="offer">$1,000 off any full roof or full home siding installation · booked before December 15</div>
 </div>
-<div class="wnav"><a class="wtab" href="/review/week1">Week 1 · 9 Nov</a><a class="wtab" href="/review/week2">Week 2 · 16 Nov</a><a class="wtab" href="/review/week3">Week 3 · 23 Nov</a><a class="wtab" href="/review/week4">Week 4 · 30 Nov</a><a class="wtab" href="/review/week5">Week 5 · 7 Dec</a><a class="wtab on" href="/review/week6">Week 6 · 14 Dec</a><a class="wtab" href="/review/week7">Week 7 · 21 Dec</a><a class="wtab" href="/review/week8">Week 8 · 28 Dec</a></div></div>
+<div class="wnav"><a class="wtab" href="/review/week1">9 Nov</a><a class="wtab" href="/review/week2">16 Nov</a><a class="wtab" href="/review/week3">23 Nov</a><a class="wtab" href="/review/week4">30 Nov</a><a class="wtab" href="/review/week5">7 Dec</a><a class="wtab on" href="/review/week6">14 Dec</a><a class="wtab" href="/review/week7">21 Dec</a><a class="wtab" href="/review/week8">28 Dec</a><a class="research" href="/review/join" title="Password protected — staff only">Research ↗</a></div></div>
 <div class="wrap">
   <div class="whobar"><label for="who">Marking as</label>
     <input id="who" placeholder="first name" autocomplete="given-name">

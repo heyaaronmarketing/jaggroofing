@@ -424,9 +424,9 @@ const LINKS = {
   w4d5:   { post: 'Most roofers say replace',    group: 'NETWORKING IN THE HAMPTONS',                   content: 'p4-replacerepair',  term: 'g-networkingintheham',   members: 8400,   at: '2026-11-20T13:00', week: 4 },
   w4e5:   { post: 'Family / pumpkins',           group: 'bayport Neighborhood community',               content: 'p5-family',         term: 'g-bayportneighborhoo',   members: 909,    at: '2026-11-20T14:00', week: 4 },
   w4f5:   { post: 'First company photo',         group: 'Helping Nobody Starves on Long Island Animal Rescue & Food Pantry', content: 'p6-crew',           term: 'g-helpingnobodystarv',   members: 0,      at: '2026-11-20T15:00', week: 4 },
-  w4g5:   { post: 'Four generations in Suffolk', group: 'LONG ISLAND FOR SALE',                         content: 'p7-generations',    term: 'g-longislandforsale',    members: 0,      at: '2026-11-20T16:00', week: 4 },
+  w4g5:   { post: 'Four generations in Suffolk', group: 'Unofficial Port Jefferson Village Hot Topics',                         content: 'p7-generations',    term: 'g-unofficialportjeff',    members: 4600,      at: '2026-11-20T16:00', week: 4 },
   w4h5:   { post: 'As a father',                 group: 'Long Island 10-13 Club',                       content: 'p8-asafather',      term: 'g-longisland1013club',   members: 0,      at: '2026-11-20T17:00', week: 4 },
-  w4i5:   { post: 'The socks photo',             group: 'Long Island Car Shows 2026',                   content: 'p9-socks',          term: 'g-longislandcarshows',   members: 0,      at: '2026-11-20T18:00', week: 4 },
+  w4i5:   { post: 'The socks photo',             group: 'Babylon Village Community Discussion',                   content: 'p9-socks',          term: 'g-babylonvillagediscussion',   members: 7800,      at: '2026-11-20T18:00', week: 4 },
 };
 
 

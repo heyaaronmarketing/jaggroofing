@@ -124,7 +124,11 @@ export async function handleStats(url, env, LINKS) {
   const nowLocal = partsIn(now);
   const nowStamp = `${nowLocal.year}-${nowLocal.month}-${nowLocal.day}T${nowLocal.hour}:${nowLocal.minute}`;
 
-  const slugs = Object.keys(LINKS);
+  // Experiment placements carry no link on purpose, so they can never register
+  // a click. Counting them here would quietly drag clicks-per-post down and
+  // make the campaign look worse than it is. They are measured in comments,
+  // which the VA logs, not in anything this query can see.
+  const slugs = Object.keys(LINKS).filter((s) => !LINKS[s].experiment);
   const isLive = (s) => LINKS[s].at <= nowStamp;
 
   /** Everything the page needs for one date window. */

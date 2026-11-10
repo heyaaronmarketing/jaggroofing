@@ -607,10 +607,14 @@ const LINKS = {
   w820:    { post: 'Family / pumpkins',                   group: 'All things Valley Stream',                                content: 'p5-family',                   term: 'g-allthingsvalle4',               members: 9600,    at: '2026-12-31T18:00', week: 8 },
   w821:    { post: 'First company photo',                 group: 'Everything Eastport @  The Villages',                     content: 'p6-crew',                     term: 'g-everythingeast4',               members: 34600,   at: '2026-12-31T20:00', week: 8 },
   w822:    { post: 'Four generations in Suffolk',         group: 'Huntington, New York',                                    content: 'p7-generations',              term: 'g-huntingtonnewy4',               members: 8600,    at: '2026-12-31T21:00', week: 8 },
+
+  // Experiment: short, photo-led, no link, ends on a question. Measured in
+  // comments rather than clicks, because these carry no link at all.
+  x101:    { post: 'Old roof / Southampton',    group: 'Long Island History',               content: 'x1-oldroof',      term: 'g-x-x101',          members: 175800,  at: '2026-11-10T20:30', week: 1, experiment: true, photo: 21 },
+  x102:    { post: 'Old house / dormers',       group: 'Sayville Happenings & History',     content: 'x2-oldhouse',     term: 'g-x-x102',          members: 9900,    at: '2026-11-11T20:30', week: 1, experiment: true, photo: 22 },
+  x103:    { post: 'How long does a roof last', group: 'The Deer Park We all remember',     content: 'x4-howlong',      term: 'g-x-x103',          members: 12800,   at: '2026-11-12T20:30', week: 1, experiment: true, photo: 24 },
+  x104:    { post: 'Metal roof',                group: 'North Babylon Times & Memories',    content: 'x5-metal',        term: 'g-x-x104',          members: 3900,    at: '2026-11-13T20:30', week: 1, experiment: true, photo: 25 },
 };
-
-
-
 
 const DEST = 'https://quote.jagg-roofing.com/';
 

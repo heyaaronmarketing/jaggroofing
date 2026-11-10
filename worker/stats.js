@@ -69,6 +69,18 @@ function prettyDay(dayStr) {
 
 /* ------------------------------------------------------------- the handler */
 
+// A click that came from a script or a hosting region, recognised after the
+// fact. Kept as SQL so it applies to rows logged before the insert-side filter
+// learned about curl. Cloudflare blocks script user-agents outright, so our own
+// checks have to spoof a browser to reach the Worker at all - what gives them
+// away is sweeping the whole link table from one city in one minute.
+const MACHINE = `
+  ua LIKE 'curl%' OR ua LIKE 'Wget%' OR ua LIKE 'python-%' OR ua LIKE 'Go-http%'
+  OR ua LIKE 'okhttp%' OR ua LIKE 'Java/%' OR ua LIKE '%Scrapy%' OR ua LIKE '%axios%'
+  OR ua LIKE '%node-fetch%' OR ua LIKE '%HTTPie%' OR ua LIKE '%Postman%'
+  OR ua LIKE '%Checker%' OR ua LIKE '%scan%' OR ua LIKE '%probe%' OR ua IS NULL OR ua = ''
+  OR city IN ('Boardman', 'Ashburn', 'Council Bluffs', 'The Dalles')`;
+
 export async function handleStats(url, env, LINKS) {
   if (!env.DB) {
     return new Response('The dashboard database is not bound to this Worker yet.',
@@ -77,10 +89,31 @@ export async function handleStats(url, env, LINKS) {
 
   const [clickRes, leadRes] = await Promise.all([
     env.DB.prepare(
-      `SELECT day, slug,
-              SUM(CASE WHEN bot = 0 THEN 1 ELSE 0 END) AS humans,
-              SUM(bot) AS bots
-         FROM clicks GROUP BY day, slug`).all(),
+      // The bot column only reflects what the filter knew at insert time, and
+      // for the first week that filter missed every command-line agent. One
+      // verification sweep over the link table recorded 302 machine hits on 9
+      // November against 20 real ones, and this dashboard reported 322 clicks.
+      // Classifying here as well as at insert means the history is corrected
+      // without rewriting rows: raw clicks stay exactly as they were logged.
+      // Nine placements go out on the heaviest day, so one browser touching
+      // more than thirty different slugs inside a day cannot be a reader - it
+      // is something walking the link table. That is the only signature our own
+      // verification runs leave, because they spoof a browser user-agent to get
+      // past Cloudflare's block on script clients. The threshold is deliberately
+      // far above the daily placement count so real traffic can never reach it.
+      `WITH sweeps AS (
+         SELECT day AS d, city AS ct, ua AS u
+           FROM clicks GROUP BY day, city, ua HAVING COUNT(DISTINCT slug) > 30
+       )
+       SELECT c.day AS day, c.slug AS slug,
+              SUM(CASE WHEN c.bot = 0 AND NOT (${MACHINE}) AND s.d IS NULL
+                       THEN 1 ELSE 0 END) AS humans,
+              SUM(CASE WHEN c.bot = 1 OR (${MACHINE}) OR s.d IS NOT NULL
+                       THEN 1 ELSE 0 END) AS bots
+         FROM clicks c
+         LEFT JOIN sweeps s
+           ON s.d = c.day AND s.u IS c.ua AND s.ct IS c.city
+        GROUP BY c.day, c.slug`).all(),
     env.DB.prepare(
       `SELECT day, slug, COUNT(*) AS n FROM leads GROUP BY day, slug`).all(),
   ]);
@@ -105,6 +138,10 @@ export async function handleStats(url, env, LINKS) {
     let totalClicks = 0, totalBots = 0, totalLeads = 0;
     for (const r of clicks) {
       if (!inRange(r.day)) continue;
+      // Scanners walk for .env, wp-admin and xmlrpc.php, and the Worker used to
+      // log every one of them as a click. A path that is not a placement is not
+      // campaign traffic at all, so it belongs in neither column.
+      if (!LINKS[r.slug]) continue;
       const t = touch(r.slug);
       t.clicks += r.humans; t.bots += r.bots;
       day(r.day).clicks += r.humans;

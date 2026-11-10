@@ -633,9 +633,21 @@ async function handleShortLink(url, request, env, ctx) {
   const ua = request.headers.get('user-agent') || '';
   // Facebook, Slack and friends fetch every link for a preview card. Those are
   // not people, and counting them would inflate every number on the dashboard.
-  const isBot = /bot|crawler|spider|facebookexternalhit|preview|slackbot|whatsapp|headless/i.test(ua);
+  // The command-line agents matter just as much: a single verification sweep
+  // over the link table put 283 machine hits into one day against about 20
+  // real ones, and the dashboard reported all of them as clicks.
+  const isBot = /bot|crawler|spider|facebookexternalhit|preview|slackbot|whatsapp|headless/i.test(ua)
+    || /curl|wget|python-requests|python-urllib|go-http|okhttp|java\/|libwww|scrapy|axios|node-fetch|httpie|postman|checker|monitor|scan|probe|insomnia/i.test(ua)
+    || ua === ''
+    // Our own checks pass ?qa=1. A spoofed browser user-agent is the only way
+    // past Cloudflare's block on script clients, so the user-agent cannot be
+    // what identifies them.
+    || url.searchParams.get('qa') === '1';
 
-  if (env.DB) {
+  // Only a slug that exists is a campaign click. Everything else hitting this
+  // Worker is a scanner walking for .env, wp-admin, xmlrpc.php and the like,
+  // and writing those rows is what put "wp-login.php" in the post report.
+  if (env.DB && entry) {
     const now = new Date();
     ctx.waitUntil(env.DB.prepare(
       `INSERT INTO clicks (slug, ts, day, city, region, country, device, bot, ua)

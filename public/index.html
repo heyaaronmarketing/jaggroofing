@@ -81,6 +81,18 @@ hr.divider{
 }
 
 .field{margin-top:18px}
+.step[hidden]{display:none}
+.steplabel{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-dim);opacity:.65;margin:0 0 4px}
+.bar{height:4px;border-radius:999px;background:var(--field-bg);overflow:hidden;margin:14px 0 2px}
+.bar span{display:block;height:100%;width:20%;border-radius:999px;background:var(--grad);
+  transition:width .28s ease}
+.nav{display:flex;gap:10px;align-items:center;margin-top:22px}
+.nav button{font:inherit;font-weight:700;border-radius:10px;cursor:pointer;min-height:48px;padding:0 20px}
+.nav .next{flex:1;border:0;color:#fff;background:var(--accent)}
+.nav .back,.nav .skip{background:transparent;border:1px solid var(--field-border);color:var(--ink-dim)}
+.nav .skip{margin-left:auto}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
 .field > label.q,
 .field > .q{
   display:block;
@@ -232,6 +244,7 @@ select option{background:#1a1e23;color:#e5e7eb}
 #otherWrap[hidden]{display:none}
 
 .actions{display:flex;justify-content:center;margin-top:26px}
+.actions[hidden]{display:none}
 button.submit{
   background-color:#de7728;
   background-image:var(--grad);
@@ -299,17 +312,47 @@ a.website-btn:hover{transform:translateY(1px)}
       </div>
 
       <h1 class="headline">Get a quick free estimate</h1>
+      <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
 
       <hr class="divider">
 
-      <!-- Name -->
+      <section class="step" data-step="1" hidden>
+        <p class="steplabel">Step 1 of 5</p>
+<!-- Services -->
+      <div class="field">
+        <span class="q">What services are you interested in?</span>
+        <div class="choices" role="radiogroup" aria-label="What services are you interested in?">
+          <label class="choice"><input type="radio" name="service" value="Roofing"><span>Roofing</span></label>
+          <label class="choice"><input type="radio" name="service" value="Siding"><span>Siding</span></label>
+          <label class="choice"><input type="radio" name="service" value="Windows"><span>Windows</span></label>
+          <label class="choice"><input type="radio" name="service" value="__other__"><span>Other</span></label>
+        </div>
+        <div id="otherWrap" hidden>
+          <label class="sr-only" for="serviceOther">Other service</label>
+          <input id="serviceOther" name="serviceOther" type="text" placeholder="Tell us what you need">
+        </div>
+      </div>
+
+        <div class="nav">
+        </div>
+      </section>
+      <section class="step" data-step="2" hidden>
+        <p class="steplabel">Step 2 of 5</p>
+<!-- Name -->
       <div class="field">
         <label class="q" for="name">What's your name? <span class="req">*</span></label>
         <input id="name" name="name" type="text" placeholder="Enter your name here" autocomplete="name" required>
         <div class="err" data-for="name">Please enter your name.</div>
       </div>
 
-      <!-- Phone -->
+              <div class="nav">
+          <button type="button" class="back">Back</button>
+          <button type="button" class="next">Continue</button>
+        </div>
+      </section>
+      <section class="step" data-step="3" hidden>
+        <p class="steplabel">Step 3 of 5</p>
+<!-- Phone -->
       <div class="field">
         <label class="q" for="phone">Best phone number to contact you? <span class="req">*</span></label>
         <div class="phone">
@@ -324,7 +367,14 @@ a.website-btn:hover{transform:translateY(1px)}
         <div class="err" data-for="phone">Please enter a valid phone number.</div>
       </div>
 
-      <!-- Email -->
+              <div class="nav">
+          <button type="button" class="back">Back</button>
+          <button type="button" class="next">Continue</button>
+        </div>
+      </section>
+      <section class="step" data-step="4" hidden>
+        <p class="steplabel">Step 4 of 5 &middot; optional</p>
+<!-- Email -->
       <div class="field">
         <label class="q" for="email">Your email please?</label>
         <div class="with-icon">
@@ -336,7 +386,15 @@ a.website-btn:hover{transform:translateY(1px)}
         <div class="err" data-for="email">Please enter a valid email address.</div>
       </div>
 
-      <!-- Address -->
+              <div class="nav">
+          <button type="button" class="back">Back</button>
+          <button type="button" class="next">Continue</button>
+          <button type="button" class="skip">Skip</button>
+        </div>
+      </section>
+      <section class="step" data-step="5" hidden>
+        <p class="steplabel">Last step</p>
+<!-- Address -->
       <div class="field">
         <span class="q">What's your home address? <span class="req">*</span></span>
         <label class="sub" for="street1">Address</label>
@@ -364,23 +422,12 @@ a.website-btn:hover{transform:translateY(1px)}
         <div class="err" data-for="address">Please complete your home address.</div>
       </div>
 
-      <!-- Services -->
-      <div class="field">
-        <span class="q">What services are you interested in?</span>
-        <div class="choices" role="radiogroup" aria-label="What services are you interested in?">
-          <label class="choice"><input type="radio" name="service" value="Roofing"><span>Roofing</span></label>
-          <label class="choice"><input type="radio" name="service" value="Siding"><span>Siding</span></label>
-          <label class="choice"><input type="radio" name="service" value="Windows"><span>Windows</span></label>
-          <label class="choice"><input type="radio" name="service" value="__other__"><span>Other</span></label>
+              <div class="nav">
+          <button type="button" class="back">Back</button>
         </div>
-        <div id="otherWrap" hidden>
-          <label class="sr-only" for="serviceOther">Other service</label>
-          <input id="serviceOther" name="serviceOther" type="text" placeholder="Tell us what you need">
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="submit" type="submit" id="submitBtn">Submit</button>
+      </section>
+      <div class="actions" id="actions" hidden>
+        <button class="submit" type="submit" id="submitBtn">Get my free estimate</button>
       </div>
       <div class="form-err" id="formErr"></div>
     </form>

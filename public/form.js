@@ -150,10 +150,90 @@
     return ok;
   }
 
+
+  /* ---------- one question per screen -------------------------------------
+     The form used to show all 13 fields at once, with name, phone AND full
+     home address required before anything else. 51 people clicked through from
+     Facebook and none of them submitted. A stranger on a phone will not hand
+     over their address as the opening move, so the order is now: what they
+     need (one tap), name, phone, email, address last. Same fields, same
+     payload -- only the order and the pacing changed.
+  ---------------------------------------------------------------------------*/
+  var steps = [].slice.call(document.querySelectorAll('.step'));
+  var barFill = $('barFill');
+  var actions = $('actions');
+  var at = 0;
+
+  function show(i, focus) {
+    at = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach(function (s, n) { s.hidden = n !== at; });
+    actions.hidden = at !== steps.length - 1;
+    barFill.style.width = Math.round(((at + 1) / steps.length) * 100) + '%';
+    formErr.classList.remove('show');
+    if (focus !== false) {
+      var f = steps[at].querySelector('input:not([type=radio]),select');
+      if (f && window.matchMedia('(min-width:768px)').matches) f.focus();
+    }
+    steps[at].scrollIntoView({ block: 'nearest' });
+  }
+
+  // Validate only what is on screen, so an untouched later step cannot block.
+  var CHECK = {
+    2: function () { return !!$('name').value.trim() || (showErr('name', true), false); },
+    3: function () {
+      var bad = phone.value.replace(/\D/g, '').length < 7;
+      showErr('phone', bad); return !bad;
+    },
+    4: function () {
+      var v = $('email').value.trim();
+      var bad = v !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      showErr('email', bad); return !bad;
+    }
+  };
+  function stepOk(n) { return CHECK[n] ? CHECK[n]() : true; }
+
+  steps.forEach(function (sec) {
+    var n = +sec.dataset.step;
+    var next = sec.querySelector('.next');
+    if (next) next.addEventListener('click', function () { if (stepOk(n)) show(at + 1); });
+    var back = sec.querySelector('.back');
+    if (back) back.addEventListener('click', function () { show(at - 1); });
+    var skip = sec.querySelector('.skip');
+    if (skip) skip.addEventListener('click', function () { show(at + 1); });
+    sec.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'radio') {
+        e.preventDefault();
+        if (stepOk(n)) show(at + 1);
+      }
+    });
+  });
+
+  // Picking a service is the whole of step 1, so move on as soon as they pick
+  // -- unless they chose Other, which needs the text box first.
+  document.querySelectorAll('input[name=service]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      if (r.value === '__other__') return;
+      setTimeout(function () { show(1); }, 180);
+    });
+  });
+  var otherBox = $('serviceOther');
+  if (otherBox) otherBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); show(1); }
+  });
+
+  show(0, false);
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     formErr.classList.remove('show');
-    if (!validate()) return;
+    if (!validate()) {
+      var firstBad = document.querySelector('.err.show');
+      if (firstBad) {
+        var sec = firstBad.closest('.step');
+        if (sec) show(steps.indexOf(sec));
+      }
+      return;
+    }
 
     var picked = document.querySelector('input[name=service]:checked');
     var service = '';

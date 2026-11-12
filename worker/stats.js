@@ -170,7 +170,11 @@ export async function handleStats(url, env, LINKS) {
     // up, so late traffic on an old post still shows.
     const live = slugs.filter((s) => LINKS[s].at.slice(0, 10) >= p.from
                                   && LINKS[s].at.slice(0, 10) <= p.to && isLive(s));
-    const reach = live.reduce((a, s) => a + LINKS[s].members, 0);
+    // Same again: "members in those groups" counts each group once, not once
+    // per post into it.
+    const seenGroup = new Map();
+    for (const s of live) seenGroup.set(LINKS[s].group, LINKS[s].members);
+    const reach = [...seenGroup.values()].reduce((a, m) => a + m, 0);
 
     return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads,
              live, postsLive: live.length, reach };
@@ -262,7 +266,11 @@ function tableBy(r, LINKS, dim) {
     const name = link ? link[dim] : (slug === '(no post)' ? UNTRACED : slug);
     const a = agg[name] = agg[name] || { clicks: 0, leads: 0, members: 0, slugs: [] };
     a.clicks += v.clicks; a.leads += v.leads;
-    if (link && dim === 'group') a.members += link.members;
+    // A group has one membership however many times we post into it. Adding it
+    // per placement inflated the denominator under "clicks per 1,000 members"
+    // -- LONG ISLAND MOMS read 172,000 on two posts -- which penalised exactly
+    // the groups the demand ranking sends us to most often.
+    if (link && dim === 'group') a.members = Math.max(a.members, link.members);
     a.slugs.push(slug);
   }
   // A post with no clicks yet still belongs in the list — its zero is the point.

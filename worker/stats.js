@@ -158,9 +158,16 @@ export async function handleStats(url, env, LINKS) {
       totalLeads += r.n;
     }
 
-    // Posts count toward a window when they were scheduled in it and that time
-    // has passed. Clicks are counted on the day they happened, not the day the
-    // post went up, so late traffic on an old post still shows.
+    // Posts count toward a window when they were SCHEDULED in it and that time
+    // has passed. That is not the same as published, and nothing here can tell
+    // the difference: Facebook's tooling exposes no moderation queue, so a post
+    // sitting in a group's approval queue is indistinguishable from one that
+    // went live. A spot check on 2026-11-12 confirmed 7 posts live out of the
+    // 30 this counted for Nov 9-12 -- though only 6 groups were searched, so
+    // that is not a measured shortfall either. Label it scheduled and let the
+    // clicks be the evidence of delivery.
+    // Clicks are counted on the day they happened, not the day the post went
+    // up, so late traffic on an old post still shows.
     const live = slugs.filter((s) => LINKS[s].at.slice(0, 10) >= p.from
                                   && LINKS[s].at.slice(0, 10) <= p.to && isLive(s));
     const reach = live.reduce((a, s) => a + LINKS[s].members, 0);
@@ -206,9 +213,9 @@ function tiles(r) {
     ['Clicks', fmt(r.totalClicks), r.totalBots
       ? fmt(r.totalBots) + (r.totalBots === 1 ? ' preview fetch' : ' preview fetches') + ' excluded'
       : 'real people'],
-    ['Posts live', fmt(r.postsLive), r.key === 'all' ? 'since launch' : 'in this window'],
+    ['Posts scheduled', fmt(r.postsLive), 'not confirmed published'],
     ['Reach', fmt(r.reach), 'members in those groups'],
-    ['Clicks per post', one(r.postsLive ? r.totalClicks / r.postsLive : 0), 'average'],
+    ['Clicks per post', one(r.postsLive ? r.totalClicks / r.postsLive : 0), 'per scheduled post'],
     ['Leads per post', one(perPost), 'Ride the Wave did ' + one(1 / BENCH.postsPerLead)],
   ];
   return '<div class="tiles">' + cards.map(([k, v, s]) =>
@@ -287,7 +294,10 @@ function tableBy(r, LINKS, dim) {
     + `</tr></thead><tbody>${body}</tbody></table></div>`
     + (dim === 'group'
       ? '<p class="fine">Clicks per 1,000 members is the number to judge a group on.'
-        + ' Member count alone is a vanity metric \u2014 a big nostalgia group can send nobody.</p>'
+        + ' Member count alone is a vanity metric \u2014 a big nostalgia group can send nobody.'
+        + ' <b>Read this table with care right now:</b> a spot check on 12 Nov found'
+        + ' 4 of 7 live posts carrying a tracking link registered to a different group,'
+        + ' so clicks can be credited to the wrong row until that is fixed.</p>'
       : '<p class="fine">Nine pieces of copy rotate across groups, so the same post appears more than once.'
         + ' This adds them up by copy, which is what tells you whether the writing is working.</p>')
     + `</section>`;
@@ -301,8 +311,8 @@ function emailText(week, all, LINKS) {
   L.push('');
   L.push(`Leads this week: ${week.totalLeads}`);
   L.push(`Clicks this week: ${week.totalClicks}`);
-  L.push(`Posts published: ${week.postsLive} into ${week.postsLive} group${week.postsLive === 1 ? '' : 's'}`
-    + ` (${fmt(week.reach)} members)`);
+  L.push(`Posts scheduled: ${week.postsLive} into ${week.postsLive} group${week.postsLive === 1 ? '' : 's'}`
+    + ` (${fmt(week.reach)} members) - scheduled, not confirmed published`);
   L.push('');
   const top = Object.entries(week.bySlug)
     .filter(([s]) => LINKS[s])
@@ -316,7 +326,7 @@ function emailText(week, all, LINKS) {
     }
     L.push('');
   }
-  L.push(`Campaign to date: ${all.totalLeads} leads from ${all.postsLive} posts (${one(all.postsLive ? all.totalLeads / all.postsLive : 0)} per post).`);
+  L.push(`Campaign to date: ${all.totalLeads} leads from ${all.postsLive} scheduled posts (${one(all.postsLive ? all.totalLeads / all.postsLive : 0)} per post).`);
   L.push(`For reference, the previous vendor averaged about ${BENCH.leadsPerMonth} leads a month, roughly 1 lead per ${BENCH.postsPerLead} posts.`);
   L.push('');
   L.push('Every lead above came in through the quote form and is already in AccuLynx under the Hey Aaron lead source.');

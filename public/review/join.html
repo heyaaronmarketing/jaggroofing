@@ -98,7 +98,7 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 
 <div class="wrap">
   <ul id="list">
-<li class="sec" data-sec="queue">Join these next &mdash; 39 groups, 10&ndash;15 join requests a day</li>
+<li class="sec" data-sec="priority">Join these next <span id="qleft">&mdash; checking&hellip;</span></li>
 <li class="row" data-gid="136322356533335" data-tier="priority" data-name="long island amazing moms of nassau and suffolk"><div class="main"><a class="gname" href="https://facebook.com/groups/136322356533335/" target="_blank" rel="noopener"><b style="color:var(--accent)">1.</b> Long Island AMAZING MOMS of Nassau and Suffolk</a><div class="meta">29,000 members · CLOSED</div><div class="sigs"><span class="sig s-x">rules allow business posts</span><span class="sig s-x">ad day: Tuesdays</span><span class="sig s-x">limit: Once a day, own thread</span><span class="sig s-chk">rules allow ads</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/136322356533335/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
 <li class="row" data-gid="1466739340300890" data-tier="priority" data-name="sound beach community"><div class="main"><a class="gname" href="https://facebook.com/groups/1466739340300890/" target="_blank" rel="noopener"><b style="color:var(--accent)">2.</b> Sound Beach Community</a><div class="meta">4,000 members · CLOSED · Sound Beach</div><div class="sigs"><span class="sig s-x">rules allow business posts</span><span class="sig s-x">ad day: Business advertisements are on Sundays only</span><span class="sig s-x">Sound Beach service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1466739340300890/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
 <li class="row" data-gid="1514025295518045" data-tier="priority" data-name="rocky point shoreham sound beach miller place ridge wading river friends"><div class="main"><a class="gname" href="https://facebook.com/groups/1514025295518045/" target="_blank" rel="noopener"><b style="color:var(--accent)">3.</b> Rocky Point-Shoreham-Sound Beach-Miller Place-Ridge &amp; Wading River Friends</a><div class="meta">2,000 members · CLOSED · Rocky Point</div><div class="sigs"><span class="sig s-x">rules allow business posts</span><span class="sig s-x">Rocky Point service area</span><span class="sig s-chk">check link rule</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1514025295518045/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
@@ -789,3 +789,26 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
   apply();
 })();
 </script>
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+</body>

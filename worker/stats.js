@@ -295,9 +295,10 @@ function tableBy(r, LINKS, dim) {
     + (dim === 'group'
       ? '<p class="fine">Clicks per 1,000 members is the number to judge a group on.'
         + ' Member count alone is a vanity metric \u2014 a big nostalgia group can send nobody.'
-        + ' <b>Read this table with care right now:</b> a spot check on 12 Nov found'
-        + ' 4 of 7 live posts carrying a tracking link registered to a different group,'
-        + ' so clicks can be credited to the wrong row until that is fixed.</p>'
+        + ' <b>Nov 9-11 is unreliable here:</b> a spot check on 12 Nov found 4 of 7'
+        + ' live posts carrying a tracking link belonging to a different group, so'
+        + ' those clicks sit on the wrong row. A posting mixup, corrected from 12 Nov'
+        + ' on; later weeks read true.</p>'
       : '<p class="fine">Nine pieces of copy rotate across groups, so the same post appears more than once.'
         + ' This adds them up by copy, which is what tells you whether the writing is working.</p>')
     + `</section>`;

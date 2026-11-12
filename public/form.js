@@ -168,6 +168,9 @@
     at = Math.max(0, Math.min(steps.length - 1, i));
     steps.forEach(function (s, n) { s.hidden = n !== at; });
     actions.hidden = at !== steps.length - 1;
+    // Shrink the logo and offer band once they are past step 1, so the tallest
+    // step still lands its submit button above the fold on a phone.
+    document.querySelector('.card').toggleAttribute('data-past-first', at > 0);
     barFill.style.width = Math.round(((at + 1) / steps.length) * 100) + '%';
     formErr.classList.remove('show');
     if (focus !== false) {

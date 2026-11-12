@@ -65,6 +65,28 @@ body{
 .logo-wrap{text-align:center;padding:8px 0 4px}
 .logo-wrap img{max-height:200px;max-width:100%;height:auto;display:inline-block}
 
+.offer{
+  margin:12px 0 0;padding:10px 12px;border-radius:10px;text-align:center;
+  font-size:14px;line-height:1.35;color:var(--ink);
+  background:rgba(246,63,10,.12);border:1px solid rgba(246,63,10,.4);
+}
+.offer b{color:var(--accent);font-weight:800}
+.offer-by{display:block;font-size:12.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-dim);opacity:.8;margin-top:3px}
+/* The offer band costs vertical space. Step 1 still fits, but the address step
+   is the tallest and it pushed the submit button 153px below the fold -- the
+   exact problem this form was rebuilt to remove. After step 1 the logo has
+   already done its job and the offer only needs to stay in the corner of the
+   eye, so both shrink. */
+[data-past-first] .logo-wrap img{max-height:72px}
+[data-past-first] h1.headline{font-size:19px;margin-top:4px}
+[data-past-first] .offer{font-size:12.5px;padding:7px 10px;margin-top:8px}
+[data-past-first] .offer-by{display:inline;margin-left:4px;font-size:12.5px}
+@media (max-height:740px),(max-width:420px){
+  .logo-wrap img{max-height:120px}
+  h1.headline{font-size:22px;margin-top:6px}
+  .offer{margin-top:9px;padding:8px 10px;font-size:13px}
+}
 h1.headline{
   font-size:26px;
   line-height:1.3;
@@ -312,6 +334,10 @@ a.website-btn:hover{transform:translateY(1px)}
       </div>
 
       <h1 class="headline">Get a quick free estimate</h1>
+
+      <p class="offer"><b>$1,000 off</b> any full roof or full home siding
+        installation<span class="offer-by">booked before December 15</span></p>
+
       <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
 
       <hr class="divider">
@@ -436,6 +462,7 @@ a.website-btn:hover{transform:translateY(1px)}
     <div id="thanks" hidden>
       <h2 id="thanksTitle">Thank you!</h2>
       <p>We will reach out to you ASAP!</p>
+      <p class="offer" style="margin-top:14px"><b>$1,000 off</b> any full roof or full home siding installation<span class="offer-by">booked before December 15</span></p>
       <a class="website-btn" href="https://jaggroofingsidingandwindows.com/" target="_blank" rel="noopener">Check Our Website Here</a>
     </div>
 

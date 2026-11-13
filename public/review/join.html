@@ -990,4 +990,27 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
   refresh();
 })();
 </script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
 </body>

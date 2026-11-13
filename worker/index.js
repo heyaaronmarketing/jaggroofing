@@ -817,7 +817,10 @@ async function handleJoins(request, env) {
     await env.DB.prepare('DELETE FROM group_joins WHERE gid = ?').bind(gid).run();
     return json({ ok: true, gid, status: null });
   }
-  if (!['requested', 'joined', 'declined'].includes(status)) {
+  // 'left' and 'keeping' belong to the Leave list -- groups already joined that
+  // turned out to be in Brooklyn, Syracuse, Dorset or Western Australia. Same
+  // table, same shared marks; the board decides which verbs a row offers.
+  if (!['requested', 'joined', 'declined', 'left', 'keeping'].includes(status)) {
     return json({ ok: false, error: 'Bad status' }, 400);
   }
   await env.DB.prepare(

@@ -70,6 +70,12 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
  margin:18px 0 8px}
 .sec:first-child{margin-top:0}
 .note{font-size:12px;color:var(--faint);margin-top:22px;max-width:70ch}
+/* leave-css */
+.row.leave{border-left:3px solid var(--bad,#B91C1C)}
+.row.leave .why{font-size:12.5px;color:var(--ink);margin-top:4px;max-width:62ch}
+.row[data-done="left"]{border-left-color:var(--muted);background:var(--sunk);opacity:.6}
+.row[data-done="keeping"]{opacity:.5}
+.mk[data-s="left"][aria-pressed="true"]{background:var(--bad,#B91C1C);border-color:var(--bad,#B91C1C)}
 </style>
 
 <div class="top"><div class="in">
@@ -90,14 +96,26 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 
 <div class="tabs">
   <button class="tab on" data-f="todo">Not done yet</button>
-  <button class="tab" data-f="priority">Join these next (39)</button><button class="tab" data-f="good" hidden></button>
+  <button class="tab" data-f="leave">Leave these (9)</button>
+  <button class="tab" data-f="priority">Join these next (39)</button>
   <button class="tab" data-f="maybe">Maybe — human review (447)</button>
   <button class="tab" data-f="all">All 583</button>
   <button class="tab" data-f="done">Done</button>
+  <button class="tab" data-f="good" hidden></button>
 </div>
 
 <div class="wrap">
   <ul id="list">
+<li class="sec" data-sec="leave">Leave these &mdash; 9 groups, wrong market</li>
+<li class="row leave" data-gid="880153462667948" data-tier="leave" data-name="southampton community group"><div class="main"><a class="gname" href="https://facebook.com/groups/880153462667948/" target="_blank" rel="noopener">Southampton Community Group</a><div class="meta">101,000 members · open</div><div class="why">Southampton, ENGLAND. Avon Beach, Dorset, prices in £.</div><div class="sigs"><span class="sig s-chk">Southampton, UK</span><span class="sig s-chk">wrong town — not Long Island at all</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/880153462667948/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="369079746844194" data-tier="leave" data-name="melville community chat"><div class="main"><a class="gname" href="https://facebook.com/groups/369079746844194/" target="_blank" rel="noopener">Melville Community Chat</a><div class="meta">40,000 members · closed</div><div class="why">Melville, WESTERN AUSTRALIA — not Melville, NY.</div><div class="sigs"><span class="sig s-chk">Melville, Western Australia</span><span class="sig s-chk">wrong town — not Long Island at all</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/369079746844194/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="193575630728676" data-tier="leave" data-name="baldwinsville ny community page"><div class="main"><a class="gname" href="https://facebook.com/groups/193575630728676/" target="_blank" rel="noopener">Baldwinsville, NY Community Page</a><div class="meta">14,000 members · open</div><div class="why">Baldwinsville is outside Syracuse — 250 miles up the Thruway.</div><div class="sigs"><span class="sig s-chk">Baldwinsville (Syracuse area), NY</span><span class="sig s-chk">wrong town — not Long Island at all</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/193575630728676/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="262956956004249" data-tier="leave" data-name="whats happening manchester"><div class="main"><a class="gname" href="https://facebook.com/groups/262956956004249/" target="_blank" rel="noopener">What&#x27;s Happening Manchester</a><div class="meta">9,000 members · open</div><div class="why">No Long Island reference anywhere in the group. Manchester UK or NH.</div><div class="sigs"><span class="sig s-chk">Manchester (?)</span><span class="sig s-chk">wrong town — not Long Island at all</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/262956956004249/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="288481694817606" data-tier="leave" data-name="glen cove vallejo solano county"><div class="main"><a class="gname" href="https://facebook.com/groups/288481694817606/" target="_blank" rel="noopener">Glen Cove, Vallejo Solano county</a><div class="meta">8,000 members · open</div><div class="why">Vallejo, Solano County, CALIFORNIA — not Glen Cove, NY.</div><div class="sigs"><span class="sig s-chk">Vallejo, CA</span><span class="sig s-chk">wrong town — not Long Island at all</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/288481694817606/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="1821884731398700" data-tier="leave" data-name="bay ridge talk"><div class="main"><a class="gname" href="https://facebook.com/groups/1821884731398700/" target="_blank" rel="noopener">Bay Ridge Talk</a><div class="meta">33,000 members · closed</div><div class="why">Bay Ridge, Brooklyn. Outside the service area.</div><div class="sigs"><span class="sig s-chk">Bay Ridge, Brooklyn</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1821884731398700/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="131262490387576" data-tier="leave" data-name="dyker heights bay ridge bensonhurst brooklyn"><div class="main"><a class="gname" href="https://facebook.com/groups/131262490387576/" target="_blank" rel="noopener">Dyker Heights, Bay Ridge &amp; Bensonhurst Brooklyn</a><div class="meta">24,000 members · closed</div><div class="why">Brooklyn — and the rules read &quot;NO ADS, NO SELLING, NO EXCEPTIONS&quot;.</div><div class="sigs"><span class="sig s-chk">Brooklyn</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/131262490387576/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="1175719601383986" data-tier="leave" data-name="i grew up in brooklyn"><div class="main"><a class="gname" href="https://facebook.com/groups/1175719601383986/" target="_blank" rel="noopener">I grew up in Brooklyn</a><div class="meta">23,000 members · open</div><div class="why">Brooklyn nostalgia group. Nothing to sell here.</div><div class="sigs"><span class="sig s-chk">Brooklyn</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1175719601383986/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
+<li class="row leave" data-gid="1661571383898933" data-tier="leave" data-name="maspeth 11378 uncensored"><div class="main"><a class="gname" href="https://facebook.com/groups/1661571383898933/" target="_blank" rel="noopener">Maspeth  11378 Uncensored</a><div class="meta">2,000 members · closed</div><div class="why">Maspeth, Queens. Outside the service area.</div><div class="sigs"><span class="sig s-chk">Maspeth, Queens</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1661571383898933/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
 <li class="sec" data-sec="priority">Join these next <span id="qleft">&mdash; checking&hellip;</span></li>
 <li class="row" data-gid="136322356533335" data-tier="priority" data-name="long island amazing moms of nassau and suffolk"><div class="main"><a class="gname" href="https://facebook.com/groups/136322356533335/" target="_blank" rel="noopener"><b style="color:var(--accent)">1.</b> Long Island AMAZING MOMS of Nassau and Suffolk</a><div class="meta">29,000 members · CLOSED</div><div class="sigs"><span class="sig s-x">rules allow business posts</span><span class="sig s-x">ad day: Tuesdays</span><span class="sig s-x">limit: Once a day, own thread</span><span class="sig s-chk">rules allow ads</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/136322356533335/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
 <li class="row" data-gid="1466739340300890" data-tier="priority" data-name="sound beach community"><div class="main"><a class="gname" href="https://facebook.com/groups/1466739340300890/" target="_blank" rel="noopener"><b style="color:var(--accent)">2.</b> Sound Beach Community</a><div class="meta">4,000 members · CLOSED · Sound Beach</div><div class="sigs"><span class="sig s-x">rules allow business posts</span><span class="sig s-x">ad day: Business advertisements are on Sundays only</span><span class="sig s-x">Sound Beach service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1466739340300890/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
@@ -685,7 +703,7 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 <li class="row" data-gid="1895040031169899" data-tier="rest" data-name="amityville town square"><div class="main"><a class="gname" href="https://facebook.com/groups/1895040031169899/" target="_blank" rel="noopener">Amityville Town Square</a><div class="meta">1,000 members · OPEN · Amityville</div><div class="sigs"><span class="sig s-x">Amityville service area</span><span class="sig s-chk">0 homeowner asks in 90d</span><span class="sig s-chk">rules forbid promotion</span><span class="sig s-chk">check link rule</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1895040031169899/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
 <li class="row" data-gid="518249236480120" data-tier="rest" data-name="heart of riverhead civic association"><div class="main"><a class="gname" href="https://facebook.com/groups/518249236480120/" target="_blank" rel="noopener">Heart of Riverhead Civic Association</a><div class="meta">716 members · OPEN · Riverhead</div><div class="sigs"><span class="sig s-x">Riverhead service area</span><span class="sig s-chk">0 homeowner asks in 90d</span><span class="sig s-chk">rules forbid promotion</span><span class="sig s-chk">check link rule</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/518249236480120/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="requested">Requested</button><button class="mk" data-s="joined">Joined</button><button class="mk" data-s="declined">Declined</button></div></li>
   </ul>
-  <p class="note"><b>Maybe — human review</b> is where the model ran out of certainty:
+  <p class="note"><!-- leave-note --><b>Leave these</b> are groups already on the account that are not in JAGG’s market — two of them are not in the country. Leaving costs nothing and stops a Central Islip roofing offer going out to Dorset. The Brooklyn and Queens ones are your call: out of the service area, but you may be in them for yourself.<br><br><b>Maybe — human review</b> is where the model ran out of certainty:
   a town it could not place, a town name Long Island shares with somewhere else, or no
   activity data. Each one says which. Nothing is wrong with these — they just need eyes.<br><br>
   <b>Pace:</b> Facebook limits how many groups one account can join
@@ -789,6 +807,167 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
   apply();
 })();
 </script>
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, 10–15 join requests a day'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
 <script>
 (function(){
   var head = document.getElementById('qleft'), prog = document.getElementById('prog');

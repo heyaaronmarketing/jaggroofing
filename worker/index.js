@@ -53,6 +53,7 @@ export default {
     if (url.pathname === '/api/sync-leads') return handleSyncLeads(url, env);
     if (url.pathname === '/api/schedule') return handleSchedule(request, env);
     if (url.pathname === '/api/joins') return handleJoins(request, env);
+    if (url.pathname === '/api/funnel') return handleFunnel(request, env, ctx);
     if (url.pathname === '/api/lead') {
       if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
       return handleLead(request, env, ctx);
@@ -790,6 +791,44 @@ async function handleSchedule(request, env) {
  * declined, and "declined" is the one worth keeping — it stops the group being
  * handed back to the VA next week.
  */
+/**
+ * Records how far a visit got through the quote form.
+ *
+ * Writes a step number and nothing else. The body is read defensively and
+ * every field is clamped, because this endpoint is public and unauthenticated
+ * -- it has to be, the form is public -- so the only safe assumption is that
+ * anything can arrive. A bad body is dropped silently rather than erroring,
+ * since a visitor should never see a tracking failure.
+ */
+async function handleFunnel(request, env, ctx) {
+  if (request.method !== 'POST') return json({ ok: false }, 405);
+  if (!env.DB) return json({ ok: true });
+
+  let b;
+  try { b = await request.json(); } catch { return json({ ok: true }); }
+
+  const sid = String(b.sid || '').slice(0, 40);
+  const step = Number(b.step);
+  if (!/^[A-Za-z0-9_-]{6,40}$/.test(sid)) return json({ ok: true });
+  if (!Number.isInteger(step) || step < 0 || (step > 10 && step !== 99)) return json({ ok: true });
+
+  const slug = /^[A-Za-z0-9_-]{1,24}$/.test(String(b.slug || '')) ? String(b.slug) : null;
+  const ua = request.headers.get('user-agent') || '';
+  // Same bot filter as the click handler, or preview fetchers would show up as
+  // visitors who landed and bounced, and the top of the funnel would be fiction.
+  if (/bot|crawler|spider|facebookexternalhit|preview|slackbot|whatsapp|headless|curl|wget|python-|go-http|okhttp|java\/|scrapy|axios|node-fetch|httpie|postman|monitor|scan|probe/i.test(ua)
+      || ua === '') return json({ ok: true });
+
+  const now = new Date();
+  ctx.waitUntil(env.DB.prepare(
+    `INSERT INTO funnel (sid, step, slug, mobile, ts, day) VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(sid, step) DO NOTHING`)
+    .bind(sid, step, slug, b.mobile ? 1 : 0, now.toISOString(), localDay(now))
+    .run().catch((e) => console.error('funnel insert failed', e && e.message)));
+
+  return json({ ok: true });
+}
+
 async function handleJoins(request, env) {
   if (!env.DB) return json({ ok: false, error: 'No database binding' }, 503);
 

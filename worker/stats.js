@@ -87,7 +87,7 @@ export async function handleStats(url, env, LINKS) {
       { status: 503, headers: { 'content-type': 'text/plain; charset=utf-8' } });
   }
 
-  const [clickRes, leadRes] = await Promise.all([
+  const [clickRes, leadRes, funnelRes] = await Promise.all([
     env.DB.prepare(
       // The bot column only reflects what the filter knew at insert time, and
       // for the first week that filter missed every command-line agent. One
@@ -116,10 +116,17 @@ export async function handleStats(url, env, LINKS) {
         GROUP BY c.day, c.slug`).all(),
     env.DB.prepare(
       `SELECT day, slug, COUNT(*) AS n FROM leads GROUP BY day, slug`).all(),
+    // One row per visit per step reached, so counting DISTINCT sid per step
+    // gives the number of people who got at least that far. The table may not
+    // exist yet on an un-migrated database, hence the catch.
+    env.DB.prepare(
+      `SELECT day, step, COUNT(DISTINCT sid) AS n FROM funnel GROUP BY day, step`)
+      .all().catch(() => ({ results: [] })),
   ]);
 
   const clicks = clickRes.results || [];
   const leads = leadRes.results || [];
+  const funnel = funnelRes.results || [];
   const now = new Date();
   const nowLocal = partsIn(now);
   const nowStamp = `${nowLocal.year}-${nowLocal.month}-${nowLocal.day}T${nowLocal.hour}:${nowLocal.minute}`;
@@ -158,6 +165,15 @@ export async function handleStats(url, env, LINKS) {
       totalLeads += r.n;
     }
 
+    // Steps are cumulative on purpose: a visit that reached step 3 also
+    // reached 0, 1 and 2, and each left its own row. Summing per step
+    // therefore already gives "got at least this far" without a running total.
+    const steps = {};
+    for (const r of funnel) {
+      if (!inRange(r.day)) continue;
+      steps[r.step] = (steps[r.step] || 0) + r.n;
+    }
+
     // Posts count toward a window when they were SCHEDULED in it and that time
     // has passed. That is not the same as published, and nothing here can tell
     // the difference: Facebook's tooling exposes no moderation queue, so a post
@@ -176,7 +192,7 @@ export async function handleStats(url, env, LINKS) {
     for (const s of live) seenGroup.set(LINKS[s].group, LINKS[s].members);
     const reach = [...seenGroup.values()].reduce((a, m) => a + m, 0);
 
-    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads,
+    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads, steps,
              live, postsLive: live.length, reach };
   }
 
@@ -342,6 +358,57 @@ function emailText(week, all, LINKS) {
   return L.join('\n');
 }
 
+/* ---------------------------------------------------------------- funnel */
+
+// The five screens of the quote form, in order. Step 0 is "the page loaded",
+// which is the only honest top of the funnel: a click that never reaches here
+// bounced before the form rendered at all.
+const STEPS = [
+  [0, 'Opened the form'],
+  [1, 'Picked what they need'],
+  [2, 'Gave their name'],
+  [3, 'Gave their phone'],
+  [4, 'Reached the address'],
+  [99, 'Submitted'],
+];
+
+function funnelPanel(r) {
+  const top = r.steps[0] || 0;
+  if (!top) {
+    return `<section class="panel"><h2>How far people get in the form</h2>`
+      + `<p class="note">No form visits recorded in this window yet. Tracking started 14 November &mdash;`
+      + ` earlier windows will stay empty, which is a gap in the record, not a zero.</p></section>`;
+  }
+  const rows = STEPS.map(([n, label], i) => {
+    const v = r.steps[n] || 0;
+    const pct = top ? Math.round((v / top) * 100) : 0;
+    const prev = i === 0 ? v : (r.steps[STEPS[i - 1][0]] || 0);
+    const lost = prev - v;
+    return `<tr><td>${esc(label)}</td><td class="r">${v}</td><td class="r">${pct}%</td>`
+      + `<td class="r">${i === 0 ? '&mdash;' : (lost > 0 ? '&minus;' + lost : '0')}</td>`
+      + `<td class="barcell"><span class="fbar" style="width:${pct}%"></span></td></tr>`;
+  }).join('');
+  // The biggest single drop is the thing to fix, so name it rather than
+  // leaving it to be read off the table.
+  let worst = null;
+  for (let i = 1; i < STEPS.length; i++) {
+    const prev = r.steps[STEPS[i - 1][0]] || 0;
+    const here = r.steps[STEPS[i][0]] || 0;
+    if (!worst || prev - here > worst.lost) worst = { lost: prev - here, from: STEPS[i - 1][1], to: STEPS[i][1] };
+  }
+  return `<section class="panel"><h2>How far people get in the form</h2>`
+    + `<table><thead><tr><th>Step</th><th class="r">People</th><th class="r">Of those who opened it</th>`
+    + `<th class="r">Lost here</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+    + (worst && worst.lost > 0
+        ? `<p class="note"><b>Biggest drop: ${worst.lost} ${worst.lost === 1 ? 'person' : 'people'}`
+          + ` between &ldquo;${esc(worst.from)}&rdquo; and &ldquo;${esc(worst.to)}&rdquo;.</b>`
+          + ` That is the step to fix next.</p>`
+        : '')
+    + `<p class="note">Counts people, not visits &mdash; one person who reloads twice is one.`
+    + ` No answer anyone types is recorded here: the form keeps names, numbers and addresses`
+    + ` and this keeps only which screen they reached.</p></section>`;
+}
+
 /* ------------------------------------------------------------------ page */
 
 function page({ rolls, all, week, silent, upcoming, LINKS, nowLocal }) {
@@ -353,7 +420,7 @@ function page({ rolls, all, week, silent, upcoming, LINKS, nowLocal }) {
       : prettyDay(r.from) + ' – ' + prettyDay(r.to);
     return `<div class="pane${i === 1 ? ' on' : ''}" data-p="${r.key}">`
       + `<div class="range">${esc(range)}</div>`
-      + tiles(r) + chart(r) + tableBy(r, LINKS, 'post') + tableBy(r, LINKS, 'group')
+      + tiles(r) + chart(r) + funnelPanel(r) + tableBy(r, LINKS, 'post') + tableBy(r, LINKS, 'group')
       + `</div>`;
   }).join('');
 
@@ -420,6 +487,8 @@ p{margin:0}
 .wrap{max-width:760px;margin:0 auto;padding:14px 24px 70px}
 .range{font-size:12.5px;font-weight:600;color:var(--faint);margin-bottom:12px}
 .pane{display:none}.pane.on{display:block}
+.barcell{width:34%;min-width:80px}
+.fbar{display:block;height:9px;border-radius:999px;background:var(--accent);min-width:2px}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
 @media (max-width:560px){.tiles{grid-template-columns:repeat(2,1fr)}}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;

@@ -166,6 +166,7 @@
 
   function show(i, focus) {
     at = Math.max(0, Math.min(steps.length - 1, i));
+    if (typeof FUNNEL !== 'undefined') FUNNEL.reach(at);
     steps.forEach(function (s, n) { s.hidden = n !== at; });
     actions.hidden = at !== steps.length - 1;
     // Shrink the logo and offer band once they are past step 1, so the tallest
@@ -224,7 +225,75 @@
     if (e.key === 'Enter') { e.preventDefault(); show(1); }
   });
 
+
+  /* ---------- funnel tracking ----------------------------------------------
+     76 people clicked through from Facebook and none of them submitted, and
+     we could not say whether they bounced on sight or gave up at the address.
+     That is the difference between a copy problem and a form problem, and we
+     were guessing. This records HOW FAR each visit got, and nothing else.
+
+     It never sends a field value. Not the name, not the phone, not the
+     address, not a keystroke -- only which step number was reached, the link
+     slug that brought them, and whether they were on a phone. A funnel that
+     collects the answers would be a second copy of the customer's personal
+     details sitting in a stats table, which is not a trade worth making to
+     learn where people stop.
+  ---------------------------------------------------------------------------*/
+  var FUNNEL = (function () {
+    var slug = (location.search.match(/[?&]rtw_pid=([A-Za-z0-9_-]{1,24})/) || [])[1] || '';
+    var sid = '';
+    try {
+      sid = sessionStorage.getItem('jagg_sid') || '';
+      if (!sid) {
+        sid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+        sessionStorage.setItem('jagg_sid', sid);
+      }
+    } catch (e) {
+      // Private mode, or storage blocked. One beacon per step still lands; it
+      // just cannot be stitched into a single visit. Better than no funnel.
+      sid = 'nostore-' + Math.random().toString(36).slice(2, 10);
+    }
+    var furthest = -1;
+    var sent = -1;
+
+    function body(step, done) {
+      return JSON.stringify({
+        sid: sid, slug: slug, step: step, done: done ? 1 : 0,
+        mobile: /mobile|android|iphone/i.test(navigator.userAgent) ? 1 : 0
+      });
+    }
+    function send(step, done, beacon) {
+      var payload = body(step, done);
+      if (beacon && navigator.sendBeacon) {
+        try { navigator.sendBeacon('/api/funnel', new Blob([payload], { type: 'application/json' })); return; }
+        catch (e) { /* fall through to fetch */ }
+      }
+      try {
+        fetch('/api/funnel', { method: 'POST', headers: { 'content-type': 'application/json' },
+                               body: payload, keepalive: true }).catch(function () {});
+      } catch (e) {}
+    }
+    return {
+      reach: function (step) {
+        if (step <= furthest) return;          // only ever moves forward
+        furthest = step;
+        if (furthest > sent) { sent = furthest; send(furthest, false, false); }
+      },
+      submitted: function () { send(99, true, false); },
+      flush: function () { if (furthest >= 0) send(furthest, false, true); }
+    };
+  })();
+
+  // A visit that never comes back is the one we most need to count, so the
+  // furthest step goes out again on the way out. pagehide fires where unload
+  // does not on mobile Safari.
+  window.addEventListener('pagehide', FUNNEL.flush);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') FUNNEL.flush();
+  });
+
   show(0, false);
+  FUNNEL.reach(0);
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -271,6 +340,7 @@
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
         if (!res.ok || !res.body.ok) throw new Error(res.body && res.body.error || 'Submission failed');
+        FUNNEL.submitted();
         $('estimateForm').hidden = true;
         var first = payload.name.split(/\s+/)[0];
         $('thanksTitle').textContent = 'Thank you ' + first + '!';

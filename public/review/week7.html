@@ -89,6 +89,19 @@ h1,h2{margin:0;text-wrap:balance}
  padding:7px 0;text-align:center;font-size:13.5px;font-weight:600;color:var(--muted)}
 .cmt{display:flex;gap:9px;padding:11px 15px 14px;border-top:1px solid var(--line);align-items:flex-start}
 .cav{width:30px;height:30px;border-radius:50%;flex:0 0 30px;object-fit:cover}
+/* Posting conditions for the group this card goes to. Amber, above the post,
+   because it is a thing to do BEFORE copying, not a footnote. */
+.prereq{margin:0 0 10px;padding:10px 12px;border:1px solid #F0C36D;border-left:3px solid #D97706;
+        border-radius:8px;background:#FEF9ED;font-size:13px;line-height:1.45}
+.prereq b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+          color:#92400E;margin-bottom:4px}
+.prereq span{display:block;color:#5B4418}
+.prereq span+span{margin-top:4px}
+@media (prefers-color-scheme:dark){
+  .prereq{background:#2A2112;border-color:#6B4E12;border-left-color:#D97706}
+  .prereq b{color:#F5C86B}
+  .prereq span{color:#E6D5B0}
+}
 .bub{background:var(--sunk);border-radius:14px;padding:9px 13px;font-size:13.5px;line-height:1.45}
 .bub b{font-size:13px}
 .pin{display:block;margin-top:4px;color:var(--faint);font-size:11px;font-style:italic}

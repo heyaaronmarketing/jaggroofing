@@ -76,6 +76,21 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 .row[data-done="left"]{border-left-color:var(--muted);background:var(--sunk);opacity:.6}
 .row[data-done="keeping"]{opacity:.5}
 .mk[data-s="left"][aria-pressed="true"]{background:var(--bad,#B91C1C);border-color:var(--bad,#B91C1C)}
+/* week-css */
+/* The next five days of joining, at the 5-a-day cap groupposting.com
+   enforces. Marked on the live queue rather than on a fixed row index, so
+   the band moves down as rows are ticked off instead of going stale the
+   moment the first request goes out. */
+.row.thisweek{border-left:3px solid var(--ok,#15803D);
+  background:linear-gradient(90deg,rgba(21,128,61,.10),rgba(21,128,61,0) 420px)}
+.row.thisweek .gname b{color:var(--ok,#15803D)!important}
+.wkflag{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  color:#fff;background:var(--ok,#15803D);vertical-align:2px}
+.wkday{font-size:12px;color:var(--ok,#15803D);font-weight:600;margin-left:6px}
+@media (prefers-color-scheme:dark){
+  .row.thisweek{background:linear-gradient(90deg,rgba(74,222,128,.13),rgba(74,222,128,0) 420px)}
+}
 </style>
 
 <div class="top"><div class="in">
@@ -1577,6 +1592,51 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
       if (!b) return;
       b.textContent = r.dataset.done ? '✓' : (n++) + '.';
       b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    var mem = q.filter(function(r){ return !r.dataset.done; })
+               .reduce(function(a, r){ return a + (+r.dataset.members || 0); }, 0);
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, ' + mem.toLocaleString()
+        + ' members still to claim. 5 a day is the cap — '
+        + 'the green band is this week.'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+    // This week: the next 25 still to do, five a day Monday to Friday, which
+    // is the cap groupposting.com enforces (5 a day, 3 minutes apart).
+    var DAYS = ['Mon','Tue','Wed','Thu','Fri'], todo = 0;
+    q.forEach(function(r){
+      r.classList.remove('thisweek');
+      var old = r.querySelector('.wkflag, .wkday');
+      while (old) { old.remove(); old = r.querySelector('.wkflag, .wkday'); }
+      if (r.dataset.done || todo >= 25) return;
+      r.classList.add('thisweek');
+      var nm = r.querySelector('.gname');
+      if (nm) {
+        var tag = document.createElement('span');
+        tag.className = todo < 5 ? 'wkflag' : 'wkday';
+        tag.textContent = todo < 5 ? 'today' : DAYS[Math.floor(todo / 5)];
+        nm.appendChild(tag);
+      }
+      todo++;
     });
   }
   new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});

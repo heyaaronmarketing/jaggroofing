@@ -91,6 +91,15 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 @media (prefers-color-scheme:dark){
   .row.thisweek{background:linear-gradient(90deg,rgba(74,222,128,.13),rgba(74,222,128,0) 420px)}
 }
+/* block-css */
+.blocked{margin:18px 0;padding:14px 16px;border:1px solid var(--line);
+  border-left:3px solid #B91C1C;border-radius:10px;background:var(--sunk)}
+.blocked h3{margin:0 0 4px;font-size:14px}
+.blocked p{margin:0 0 10px;font-size:13.5px;color:var(--muted);max-width:70ch}
+.blocked ul{margin:0;padding-left:20px;font-size:13.5px;columns:2;column-gap:28px}
+.blocked li{margin:0 0 4px;break-inside:avoid}
+.backfill{margin:0 0 14px;font-size:13.5px;color:var(--ink);max-width:74ch}
+.backfill b{color:var(--accent)}
 </style>
 
 <div class="top"><div class="in">
@@ -121,7 +130,7 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
 </div>
 
 <div class="wrap">
-  <ul id="list">
+  <!-- blocked --><div class="blocked"><h3>12 groups unscheduled &mdash; posts never clear their approval queue</h3><p>Already joined, still joined, nothing to do on Facebook. Their posts sat in the group&rsquo;s approval queue for a week or more and not one ever published, so they are out of the rotation rather than quietly counted as reach. Reversible the day any of them publishes.</p><ul><li>Huntington Matters Community Forum <span class="gmem">62,000 members</span></li><li>Shirley and the Mastics. Our Town, Our Community, Our Home! <span class="gmem">57,000 members</span></li><li>Town of Babylon group <span class="gmem">31,000 members</span></li><li>Kings Park Community <span class="gmem">28,000 members</span></li><li>Shirley/Mastics Community Group <span class="gmem">19,000 members</span></li><li>Dix Hills Moms / South Huntington Moms <span class="gmem">13,000 members</span></li><li>Smithtown Moms and Dads Uncensored <span class="gmem">12,000 members</span></li><li>Freeporters for Freeport <span class="gmem">10,000 members</span></li><li>Coram Community News <span class="gmem">8,000 members</span></li><li>Wake Up Lake! <span class="gmem">6,000 members</span></li><li>The OFFICIAL Patchogue-Medford Mom’s &amp; Dad’s Group <span class="gmem">6,000 members</span></li><li>Sayville Moms and Dads Uncensored <span class="gmem">2,000 members</span></li></ul></div><p class="backfill">That is <b>254,000 members</b> of reach to replace. Across every post so far <b>57%</b> publish and the rest sit in a queue, and nothing we can see about a group predicts which it will be &mdash; a published rule permitting ads gives 59%, no rule at all gives 55%. So replacing it needs roughly <b>443,492 members</b> of new groups joined, against <b>494,247</b> sitting in the queue below.</p><!-- /blocked --><ul id="list">
 <li class="sec" data-sec="leave">Leave these &mdash; 2 of 9 still on the account, wrong market</li>
 <li class="row leave" data-gid="1821884731398700" data-tier="leave" data-name="bay ridge talk"><div class="main"><a class="gname" href="https://facebook.com/groups/1821884731398700/" target="_blank" rel="noopener">Bay Ridge Talk</a><div class="meta">33,000 members · closed</div><div class="why">Bay Ridge, Brooklyn. Outside the service area.</div><div class="sigs"><span class="sig s-chk">Bay Ridge, Brooklyn</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1821884731398700/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
 <li class="row leave" data-gid="1175719601383986" data-tier="leave" data-name="i grew up in brooklyn"><div class="main"><a class="gname" href="https://facebook.com/groups/1175719601383986/" target="_blank" rel="noopener">I grew up in Brooklyn</a><div class="meta">23,000 members · open</div><div class="why">Brooklyn nostalgia group. Nothing to sell here.</div><div class="sigs"><span class="sig s-chk">Brooklyn</span><span class="sig s-chk">right state, outside the service area</span></div><div class="stat" hidden></div></div><div class="acts"><a class="open" href="https://facebook.com/groups/1175719601383986/" target="_blank" rel="noopener">Open ↗</a><button class="mk" data-s="left">Left it</button><button class="mk mk-no" data-s="keeping">Keeping it</button></div></li>
@@ -1592,6 +1601,96 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px
       if (!b) return;
       b.textContent = r.dataset.done ? '✓' : (n++) + '.';
       b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    var mem = q.filter(function(r){ return !r.dataset.done; })
+               .reduce(function(a, r){ return a + (+r.dataset.members || 0); }, 0);
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, ' + mem.toLocaleString()
+        + ' members still to claim. 5 a day is the cap — '
+        + 'the green band is this week.'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+    // This week: the next 25 still to do, five a day Monday to Friday, which
+    // is the cap groupposting.com enforces (5 a day, 3 minutes apart).
+    var DAYS = ['Mon','Tue','Wed','Thu','Fri'], todo = 0;
+    q.forEach(function(r){
+      r.classList.remove('thisweek');
+      var old = r.querySelector('.wkflag, .wkday');
+      while (old) { old.remove(); old = r.querySelector('.wkflag, .wkday'); }
+      if (r.dataset.done || todo >= 25) return;
+      r.classList.add('thisweek');
+      var nm = r.querySelector('.gname');
+      if (nm) {
+        var tag = document.createElement('span');
+        tag.className = todo < 5 ? 'wkflag' : 'wkday';
+        tag.textContent = todo < 5 ? 'today' : DAYS[Math.floor(todo / 5)];
+        nm.appendChild(tag);
+      }
+      todo++;
+    });
+  }
+  new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var head = document.getElementById('qleft'), prog = document.getElementById('prog');
+  if (!head || !prog) return;
+  function refresh(){
+    var q = [].slice.call(document.querySelectorAll('.row[data-tier="priority"]'));
+    var left = q.filter(function(r){ return !r.dataset.done; }).length;
+    var mem = q.filter(function(r){ return !r.dataset.done; })
+               .reduce(function(a, r){ return a + (+r.dataset.members || 0); }, 0);
+    head.textContent = left
+      ? '— ' + left + ' of ' + q.length + ' left, ' + mem.toLocaleString()
+        + ' members still to claim. 5 a day is the cap — '
+        + 'the green band is this week.'
+      : '— all ' + q.length + ' done. Next tranche needs the Maybe list reviewed.';
+    var n = 1;
+    q.forEach(function(r){
+      var b = r.querySelector('.gname b');
+      if (!b) return;
+      b.textContent = r.dataset.done ? '✓' : (n++) + '.';
+      b.style.color = r.dataset.done ? 'var(--muted)' : 'var(--accent)';
+    });
+    // This week: the next 25 still to do, five a day Monday to Friday, which
+    // is the cap groupposting.com enforces (5 a day, 3 minutes apart).
+    var DAYS = ['Mon','Tue','Wed','Thu','Fri'], todo = 0;
+    q.forEach(function(r){
+      r.classList.remove('thisweek');
+      var old = r.querySelector('.wkflag, .wkday');
+      while (old) { old.remove(); old = r.querySelector('.wkflag, .wkday'); }
+      if (r.dataset.done || todo >= 25) return;
+      r.classList.add('thisweek');
+      var nm = r.querySelector('.gname');
+      if (nm) {
+        var tag = document.createElement('span');
+        tag.className = todo < 5 ? 'wkflag' : 'wkday';
+        tag.textContent = todo < 5 ? 'today' : DAYS[Math.floor(todo / 5)];
+        nm.appendChild(tag);
+      }
+      todo++;
     });
   }
   new MutationObserver(refresh).observe(prog, {childList: true, characterData: true, subtree: true});

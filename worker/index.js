@@ -59,7 +59,20 @@ export default {
       return handleLead(request, env, ctx);
     }
 
-    return env.ASSETS.fetch(request);
+    // run_worker_first means every asset comes through here, and a Worker
+    // response carries no caching of its own: the logo was answering
+    // "max-age=0, must-revalidate", so a returning visitor paid a round trip
+    // for a file that had not changed. Images, scripts and styles get a year;
+    // index.html deliberately does not, or a copy change would never land.
+    {
+      const res = await env.ASSETS.fetch(request);
+      if (res.ok && /\.(webp|png|jpe?g|svg|ico|js|css|woff2?|zip)$/i.test(url.pathname)) {
+        const out = new Response(res.body, res);
+        out.headers.set('cache-control', 'public, max-age=31536000, immutable');
+        return out;
+      }
+      return res;
+    }
   },
 };
 

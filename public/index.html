@@ -471,5 +471,15 @@ a.website-btn:hover{transform:translateY(1px)}
 
 <script src="/countries.js"></script>
 <script src="/form.js"></script>
+
+<!-- GreenLeadSource visitor identification. Loaded last on purpose: the bundle
+     is 382KB against 29KB for this whole page, and in <head> it would hold up
+     the first screen, which is the one screen this form converts on.
+     No usercentricsSettingsId, so no consent banner is shown - with no CMP
+     present the script resolves consent itself and proceeds. gcm:true writes
+     Google Consent Mode defaults to the dataLayer; nothing on this page reads
+     them today, so it is inert here and kept only to match other sites. -->
+<script src="https://cdn.greenleadsource.com/greenleadsource.js"></script>
+<script>GreenLeadSource.init({siteId:'0cfccf24-32fe-4528-b530-5cfaf1d9b20e',gcm:true});GreenLeadSource.page();</script>
 </body>
 </html>

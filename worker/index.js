@@ -1165,9 +1165,16 @@ async function handleFunnel(request, env, ctx) {
   if (!Number.isInteger(step) || step < 0 || (step > 10 && step !== 99)) return json({ ok: true });
 
   const slug = /^[A-Za-z0-9_-]{1,24}$/.test(String(b.slug || '')) ? String(b.slug) : null;
+  // Our own checks pass ?qa=1. The browser already suppresses the beacon, but
+  // this endpoint is public and the flag costs nothing to honour here too.
+  if (/[?&]qa=1\b/.test(new URL(request.url).search)
+      || /[?&]qa=1\b/.test(String(b.href || ''))) return json({ ok: true });
+
   const ua = request.headers.get('user-agent') || '';
-  // Same bot filter as the click handler, or preview fetchers would show up as
-  // visitors who landed and bounced, and the top of the funnel would be fiction.
+  // Same user-agent filter as the click handler. It only catches machines that
+  // say what they are: the scanner walking every new link spoofs a browser and
+  // passes this cleanly, which is why the dashboard classifies by geography as
+  // well, borrowed from the click that landed the visit.
   if (/bot|crawler|spider|facebookexternalhit|preview|slackbot|whatsapp|headless|curl|wget|python-|go-http|okhttp|java\/|scrapy|axios|node-fetch|httpie|postman|monitor|scan|probe/i.test(ua)
       || ua === '') return json({ ok: true });
 

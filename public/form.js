@@ -240,6 +240,11 @@
      learn where people stop.
   ---------------------------------------------------------------------------*/
   var FUNNEL = (function () {
+    // Our own checks already pass ?qa=1 to keep out of the click table, and
+    // nothing kept them out of this one: a single look at the page on 19 Nov
+    // put a session into the funnel that then showed up as a visitor who
+    // bounced. Same flag, same exemption, and the beacons simply never fire.
+    var QA = /[?&]qa=1\b/.test(location.search);
     var slug = (location.search.match(/[?&]rtw_pid=([A-Za-z0-9_-]{1,24})/) || [])[1] || '';
     var sid = '';
     try {
@@ -263,6 +268,7 @@
       });
     }
     function send(step, done, beacon) {
+      if (QA) return;
       var payload = body(step, done);
       if (beacon && navigator.sendBeacon) {
         try { navigator.sendBeacon('/api/funnel', new Blob([payload], { type: 'application/json' })); return; }

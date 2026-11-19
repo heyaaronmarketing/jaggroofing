@@ -79,7 +79,14 @@ const MACHINE = `
   OR ua LIKE 'okhttp%' OR ua LIKE 'Java/%' OR ua LIKE '%Scrapy%' OR ua LIKE '%axios%'
   OR ua LIKE '%node-fetch%' OR ua LIKE '%HTTPie%' OR ua LIKE '%Postman%'
   OR ua LIKE '%Checker%' OR ua LIKE '%scan%' OR ua LIKE '%probe%' OR ua IS NULL OR ua = ''
-  OR city IN ('Boardman', 'Ashburn', 'Council Bluffs', 'The Dalles')`;
+  OR city IN ('Boardman', 'Ashburn', 'Council Bluffs', 'The Dalles',
+              'Prineville', 'Livingston')`;
+// The same test, written against the funnel query's aliased columns.
+const MACHINE_S = MACHINE.replace(/\bua\b/g, 's.ua').replace(/\bcity\b/g, 's.city');
+
+// Prineville is Meta's own datacenter and put two sessions into the funnel on
+// 19 Nov; Livingston walked 90 distinct slugs in a day on 9 Nov. Neither was in
+// the list, so both were being reported as readers.
 
 export async function handleStats(url, env, LINKS) {
   if (!env.DB) {
@@ -96,14 +103,23 @@ export async function handleStats(url, env, LINKS) {
       // Classifying here as well as at insert means the history is corrected
       // without rewriting rows: raw clicks stay exactly as they were logged.
       // Nine placements go out on the heaviest day, so one browser touching
-      // more than thirty different slugs inside a day cannot be a reader - it
-      // is something walking the link table. That is the only signature our own
+      // five or more different slugs inside a day is not reading them, it is
+      // walking the link table. The threshold was 30, which only ever caught
+      // our own verification sweep: the link scanner that hits each new URL
+      // once touches 5 to 9 a day and sailed under it, and on 19 Nov it was
+      // still being counted as 49 human clicks and 24 form visitors.
+      //
+      // 5 is a judgement, and the dashboard names what it discards so the
+      // judgement can be argued with. It does discard three New York City
+      // sources that could conceivably be one enthusiastic reader; they carry
+      // the same signature as the rest -- one city, one user-agent, five
+      // slugs, one day -- and that signature is what is being tested. That is the only signature our own
       // verification runs leave, because they spoof a browser user-agent to get
       // past Cloudflare's block on script clients. The threshold is deliberately
       // far above the daily placement count so real traffic can never reach it.
       `WITH sweeps AS (
          SELECT day AS d, city AS ct, ua AS u
-           FROM clicks GROUP BY day, city, ua HAVING COUNT(DISTINCT slug) > 30
+           FROM clicks GROUP BY day, city, ua HAVING COUNT(DISTINCT slug) >= 5
        )
        SELECT c.day AS day, c.slug AS slug,
               SUM(CASE WHEN c.bot = 0 AND NOT (${MACHINE}) AND s.d IS NULL
@@ -119,8 +135,42 @@ export async function handleStats(url, env, LINKS) {
     // One row per visit per step reached, so counting DISTINCT sid per step
     // gives the number of people who got at least that far. The table may not
     // exist yet on an un-migrated database, hence the catch.
+    // The funnel applied the same user-agent test as clicks and nothing else,
+    // and the scanner that walks every new link spoofs a real browser, so it
+    // arrived as a person who opened the form and did nothing. On 19 Nov this
+    // panel reported 61 openers and a 10% first-step rate, and named that step
+    // as the one to fix; 24 of those openers were machines and the real rate
+    // was 27%. Someone would have redesigned a screen that was working.
+    //
+    // Geography is the one thing a user-agent cannot fake, and the funnel does
+    // not record it -- so it is borrowed from the click that landed the visit,
+    // matched on slug within three minutes. That fixes the sessions already on
+    // file as well as future ones, which a new column could not do.
     env.DB.prepare(
-      `SELECT day, step, COUNT(DISTINCT sid) AS n FROM funnel GROUP BY day, step`)
+      `WITH src AS (
+         SELECT f.sid AS sid, f.step AS step, f.day AS day,
+                (SELECT c.city FROM clicks c
+                  WHERE c.slug = f.slug
+                    AND abs(julianday(c.ts) - julianday(f.ts)) * 86400 < 180
+                  ORDER BY abs(julianday(c.ts) - julianday(f.ts)) LIMIT 1) AS city,
+                (SELECT c.ua FROM clicks c
+                  WHERE c.slug = f.slug
+                    AND abs(julianday(c.ts) - julianday(f.ts)) * 86400 < 180
+                  ORDER BY abs(julianday(c.ts) - julianday(f.ts)) LIMIT 1) AS ua
+           FROM funnel f
+       ),
+       sweeps AS (
+         SELECT day AS d, city AS ct, ua AS u
+           FROM clicks GROUP BY day, city, ua HAVING COUNT(DISTINCT slug) >= 5
+       )
+       SELECT s.day AS day, s.step AS step,
+              COUNT(DISTINCT CASE WHEN w.d IS NULL AND NOT (${MACHINE_S})
+                                  THEN s.sid END) AS n,
+              COUNT(DISTINCT CASE WHEN w.d IS NOT NULL OR (${MACHINE_S})
+                                  THEN s.sid END) AS machines
+         FROM src s
+         LEFT JOIN sweeps w ON w.d = s.day AND w.u IS s.ua AND w.ct IS s.city
+        GROUP BY s.day, s.step`)
       .all().catch(() => ({ results: [] })),
   ]);
 
@@ -169,9 +219,11 @@ export async function handleStats(url, env, LINKS) {
     // reached 0, 1 and 2, and each left its own row. Summing per step
     // therefore already gives "got at least this far" without a running total.
     const steps = {};
+    let stepMachines = 0;
     for (const r of funnel) {
       if (!inRange(r.day)) continue;
       steps[r.step] = (steps[r.step] || 0) + r.n;
+      if (r.step === 0) stepMachines += r.machines || 0;
     }
 
     // Posts count toward a window when they were SCHEDULED in it and that time
@@ -192,7 +244,7 @@ export async function handleStats(url, env, LINKS) {
     for (const s of live) seenGroup.set(LINKS[s].group, LINKS[s].members);
     const reach = [...seenGroup.values()].reduce((a, m) => a + m, 0);
 
-    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads, steps,
+    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads, steps, stepMachines,
              live, postsLive: live.length, reach };
   }
 
@@ -403,6 +455,14 @@ function funnelPanel(r) {
         ? `<p class="note"><b>Biggest drop: ${worst.lost} ${worst.lost === 1 ? 'person' : 'people'}`
           + ` between &ldquo;${esc(worst.from)}&rdquo; and &ldquo;${esc(worst.to)}&rdquo;.</b>`
           + ` That is the step to fix next.</p>`
+        : '')
+    + (r.stepMachines
+        ? `<p class="note"><b>${r.stepMachines} more ${r.stepMachines === 1 ? 'visit was' : 'visits were'}`
+          + ` left out as machines.</b> Link scanners fetch every new URL once and render it,`
+          + ` which looks exactly like a person who opened the form and did nothing. They are`
+          + ` spotted by where they came from and by touching five or more different posts in a`
+          + ` day &mdash; not by their browser, which they spoof. Counting them was making this`
+          + ` form look roughly three times worse at the first step than it is.</p>`
         : '')
     + `<p class="note">Counts people, not visits &mdash; one person who reloads twice is one.`
     + ` No answer anyone types is recorded here: the form keeps names, numbers and addresses`

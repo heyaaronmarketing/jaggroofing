@@ -80,7 +80,15 @@ const MACHINE = `
   OR ua LIKE '%node-fetch%' OR ua LIKE '%HTTPie%' OR ua LIKE '%Postman%'
   OR ua LIKE '%Checker%' OR ua LIKE '%scan%' OR ua LIKE '%probe%' OR ua IS NULL OR ua = ''
   OR city IN ('Boardman', 'Ashburn', 'Council Bluffs', 'The Dalles',
-              'Prineville', 'Livingston')`;
+              'Prineville', 'Livingston',
+              -- Added 2026-11-20 after reading the click log by city. The
+              -- scanner moved to touching fewer than five slugs a day and so
+              -- slipped under the sweep test; these are the places the rest of
+              -- it comes from. None of them can contain a Suffolk County
+              -- homeowner looking for a roofer, which is the only test that
+              -- matters here.
+              'Miami', 'Los Angeles', 'Aalsmeer', 'Warsaw', 'Lugano',
+              'Kerkrade', 'Clifton', 'Washington')`;
 // The same test, written against the funnel query's aliased columns.
 const MACHINE_S = MACHINE.replace(/\bua\b/g, 's.ua').replace(/\bcity\b/g, 's.city');
 
@@ -124,6 +132,9 @@ export async function handleStats(url, env, LINKS) {
        SELECT c.day AS day, c.slug AS slug,
               SUM(CASE WHEN c.bot = 0 AND NOT (${MACHINE}) AND s.d IS NULL
                        THEN 1 ELSE 0 END) AS humans,
+              SUM(CASE WHEN c.bot = 0 AND NOT (${MACHINE}) AND s.d IS NULL
+                        AND c.region = 'New York'
+                       THEN 1 ELSE 0 END) AS inarea,
               SUM(CASE WHEN c.bot = 1 OR (${MACHINE}) OR s.d IS NOT NULL
                        THEN 1 ELSE 0 END) AS bots
          FROM clicks c
@@ -196,7 +207,7 @@ export async function handleStats(url, env, LINKS) {
     const touch = (s) => (bySlug[s] = bySlug[s] || { clicks: 0, bots: 0, leads: 0 });
     const day = (d) => (byDay[d] = byDay[d] || { clicks: 0, leads: 0 });
 
-    let totalClicks = 0, totalBots = 0, totalLeads = 0;
+    let totalClicks = 0, totalBots = 0, totalLeads = 0, totalInArea = 0;
     for (const r of clicks) {
       if (!inRange(r.day)) continue;
       // Scanners walk for .env, wp-admin and xmlrpc.php, and the Worker used to
@@ -206,7 +217,7 @@ export async function handleStats(url, env, LINKS) {
       const t = touch(r.slug);
       t.clicks += r.humans; t.bots += r.bots;
       day(r.day).clicks += r.humans;
-      totalClicks += r.humans; totalBots += r.bots;
+      totalClicks += r.humans; totalBots += r.bots; totalInArea += r.inarea || 0;
     }
     for (const r of leads) {
       if (!inRange(r.day)) continue;
@@ -244,7 +255,7 @@ export async function handleStats(url, env, LINKS) {
     for (const s of live) seenGroup.set(LINKS[s].group, LINKS[s].members);
     const reach = [...seenGroup.values()].reduce((a, m) => a + m, 0);
 
-    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads, steps, stepMachines,
+    return { ...p, bySlug, byDay, totalClicks, totalBots, totalLeads, totalInArea, steps, stepMachines,
              live, postsLive: live.length, reach };
   }
 
@@ -282,11 +293,17 @@ function tiles(r) {
   const perPost = r.postsLive ? r.totalLeads / r.postsLive : 0;
   const cards = [
     ['Leads', fmt(r.totalLeads), r.totalLeads === 1 ? 'form submission' : 'form submissions'],
-    ['Clicks', fmt(r.totalClicks), r.totalBots
-      ? fmt(r.totalBots) + (r.totalBots === 1 ? ' preview fetch' : ' preview fetches') + ' excluded'
-      : 'real people'],
-    ['Posts scheduled', fmt(r.postsLive), 'not confirmed published'],
-    ['Reach', fmt(r.reach), 'members in those groups'],
+    // The headline is the in-area number, because a Suffolk roofer's prospect
+    // is on Long Island. The wider count sat on this page for two weeks reading
+    // like demand: 110 clicks next to 0 leads makes the form look broken, when
+    // in fact about a tenth of those clicks could have been a customer.
+    ['Clicks from New York', fmt(r.totalInArea),
+      fmt(r.totalClicks - r.totalInArea) + ' more from outside the area, '
+      + fmt(r.totalBots) + ' machines, all excluded from this number'],
+    ['Posts scheduled', fmt(r.postsLive),
+      'scheduled, NOT confirmed published \u2014 about 4 in 10 sit in a group\u2019s approval queue'],
+    ['Reach', fmt(r.reach),
+      'members in groups we scheduled a post into \u2014 not people who saw one'],
     ['Clicks per post', one(r.postsLive ? r.totalClicks / r.postsLive : 0), 'per scheduled post'],
     ['Leads per post', one(perPost), 'Ride the Wave did ' + one(1 / BENCH.postsPerLead)],
   ];
@@ -485,12 +502,18 @@ function page({ rolls, all, week, silent, upcoming, LINKS, nowLocal }) {
   }).join('');
 
   const flags = [];
-  if (silent.length) {
-    flags.push(`<div class="flag warn"><b>${silent.length} post${silent.length === 1 ? ' has' : 's have'} no clicks at all`
-      + ` more than six hours after it was due.</b> Either it went out later than planned, a group admin held`
-      + ` or removed it, or it never left the queue. Worth checking: `
-      + silent.map((s) => esc(LINKS[s].group)).join(', ') + '.</div>');
-  }
+  // The "no clicks six hours after it was due" warning is gone. It was written
+  // when a post with no clicks looked like a failure. It isn't: across the whole
+  // campaign about eleven clicks have come from Long Island, so a post with
+  // zero clicks is the norm and the flag was listing 61 of them as if each were
+  // a separate incident. A warning that fires on the normal case trains you to
+  // ignore the page.
+  //
+  // The real delivery signal is whether a post cleared the group's approval
+  // queue, which lives in the GroupPosting export, not in this database. Until
+  // that is wired in, the honest thing is to say nothing rather than raise 61
+  // alarms about an absence of clicks nobody should expect.
+  void silent;
   if (upcoming.length) {
     flags.push(`<div class="flag"><b>Next up:</b> `
       + upcoming.map((s) => `${esc(LINKS[s].post)} → ${esc(LINKS[s].group)}`

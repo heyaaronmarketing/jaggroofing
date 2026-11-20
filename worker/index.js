@@ -980,6 +980,22 @@ const LINKS = {
   r1214106:  { post: 'Four generations in Suffolk', group: 'Deer Park NY Community Page', content: 'p7-generations', term: 'b-261216-p3-winterready', members: 13000, at: '2026-12-14T11:00', week: 0, batch: 'b-261214-p7-generations', via: 'w607'},
   r1214107:  { post: 'First company photo', group: 'Northport-East Northport Community Forum', content: 'p6-crew', term: 'g-northporteastnorth', members: 3000, at: '2026-12-15T09:00', week: 0, batch: 'b-261215-p6-crew', via: 'w615'},
   r1214108:  { post: 'As a father', group: 'All things Port Jeff Village by the people in the Neighborhood', content: 'p8-asafather', term: 'b-261216-p8-asafather', members: 5000, at: '2026-12-16T16:00', week: 0, batch: 'b-261216-p8-asafather'},
+  we11210:  { post: 'The socks photo', group: 'Islip Terrace And All Of The Islips', content: 'p9-socks', term: 'b-261121-p9-socks', members: 13000, at: '2026-11-21T11:00', week: 0, proposed: true, batch: 'b-261121-p9-socks'},
+  we11211:  { post: 'The socks photo', group: 'Parents of Huntington', content: 'p9-socks', term: 'b-we1121', members: 7000, at: '2026-11-21T13:00', week: 0, proposed: true, batch: 'b-261121-p9-socks', via: 'we11210'},
+  we11212:  { post: 'The socks photo', group: 'East Islip Parents', content: 'p9-socks', term: 'b-we1121', members: 6000, at: '2026-11-21T15:00', week: 0, proposed: true, batch: 'b-261121-p9-socks', via: 'we11210'},
+  we11213:  { post: 'The socks photo', group: 'East Islip, N.Y. 11730', content: 'p9-socks', term: 'b-we1121', members: 6000, at: '2026-11-21T17:00', week: 0, proposed: true, batch: 'b-261121-p9-socks', via: 'we11210'},
+  we11220:  { post: 'Most roofers say replace', group: 'Mom Life Long Island', content: 'p4-replacerepair', term: 'b-261122-p4-replacerepair', members: 40000, at: '2026-11-22T11:00', week: 0, proposed: true, batch: 'b-261122-p4-replacerepair'},
+  we11221:  { post: 'Most roofers say replace', group: 'Islip Terrace And All Of The Islips', content: 'p4-replacerepair', term: 'b-we1122', members: 13000, at: '2026-11-22T13:00', week: 0, proposed: true, batch: 'b-261122-p4-replacerepair', via: 'we11220'},
+  we11222:  { post: 'Most roofers say replace', group: 'THE ORIGINAL Islip This & That', content: 'p4-replacerepair', term: 'b-we1122', members: 11000, at: '2026-11-22T15:00', week: 0, proposed: true, batch: 'b-261122-p4-replacerepair', via: 'we11220'},
+  we11223:  { post: 'Most roofers say replace', group: 'Sound Beach Neighbors', content: 'p4-replacerepair', term: 'b-we1122', members: 6000, at: '2026-11-22T17:00', week: 0, proposed: true, batch: 'b-261122-p4-replacerepair', via: 'we11220'},
+  we11280:  { post: 'Most roofers say replace', group: 'Islip Terrace And All Of The Islips', content: 'p4-replacerepair', term: 'b-261128-p4-replacerepair', members: 13000, at: '2026-11-28T11:00', week: 0, proposed: true, batch: 'b-261128-p4-replacerepair'},
+  we11281:  { post: 'Most roofers say replace', group: 'Parents of Huntington', content: 'p4-replacerepair', term: 'b-we1128', members: 7000, at: '2026-11-28T13:00', week: 0, proposed: true, batch: 'b-261128-p4-replacerepair', via: 'we11280'},
+  we11282:  { post: 'Most roofers say replace', group: 'East Islip Parents', content: 'p4-replacerepair', term: 'b-we1128', members: 6000, at: '2026-11-28T15:00', week: 0, proposed: true, batch: 'b-261128-p4-replacerepair', via: 'we11280'},
+  we11283:  { post: 'Most roofers say replace', group: 'East Islip, N.Y. 11730', content: 'p4-replacerepair', term: 'b-we1128', members: 6000, at: '2026-11-28T17:00', week: 0, proposed: true, batch: 'b-261128-p4-replacerepair', via: 'we11280'},
+  we11290:  { post: 'As a father', group: 'Mom Life Long Island', content: 'p8-father', term: 'b-261129-p8-father', members: 40000, at: '2026-11-29T11:00', week: 0, proposed: true, batch: 'b-261129-p8-father'},
+  we11291:  { post: 'As a father', group: 'Islip Terrace And All Of The Islips', content: 'p8-father', term: 'b-we1129', members: 13000, at: '2026-11-29T13:00', week: 0, proposed: true, batch: 'b-261129-p8-father', via: 'we11290'},
+  we11292:  { post: 'As a father', group: 'THE ORIGINAL Islip This & That', content: 'p8-father', term: 'b-we1129', members: 11000, at: '2026-11-29T15:00', week: 0, proposed: true, batch: 'b-261129-p8-father', via: 'we11290'},
+  we11293:  { post: 'As a father', group: 'Sound Beach Neighbors', content: 'p8-father', term: 'b-we1129', members: 6000, at: '2026-11-29T17:00', week: 0, proposed: true, batch: 'b-261129-p8-father', via: 'we11290'},
 };
 
 const DEST = 'https://quote.jagg-roofing.com/';

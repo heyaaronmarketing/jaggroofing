@@ -163,8 +163,10 @@ a.lnk:hover{text-decoration:underline}
   @media (prefers-color-scheme:dark){
     :root:not([data-theme="light"]) .dstat.pend{background:#b07a10}}
 
-  /* A proposed day is a plan, not a commitment. It must not look like the rest
-     of the schedule until the client has said yes. */
+  /* A weekend day is new ground. Jacob has not asked for it and has not
+     refused it; we are running it and saying so, and one word from him pulls
+     all sixteen rows (they are the only ones carrying proposed: true). It is
+     marked so he can see at a glance which days are the new ones. */
   .day.proposed{border-left:3px solid var(--accent);padding-left:14px;
     background:linear-gradient(90deg,var(--accent-wash),transparent 520px)}
   .pflag{display:inline-block;margin-left:10px;padding:2px 9px;border-radius:999px;

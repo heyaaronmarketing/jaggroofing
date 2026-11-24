@@ -1048,6 +1048,16 @@ const LINKS = {
   r112371:  { post: 'Ready for another LI winter', group: 'WE ARE NORTH AMITYVILLE', content: 'p3-winterready', term: 'g-wearenorthamityvil', members: 0, at: '2026-11-24T14:18', week: 0, batch: 'b-261124-p3-winterready', via: 'r112305'},
   r112373:  { post: 'Four generations in Suffolk', group: 'Center Moriches Community Posts', content: 'p7-generations', term: 'b-261123-p7-generations', members: 10000, at: '2026-11-23T13:32', week: 0, batch: 'b-261123-p7-generations'},
   r112374:  { post: 'As a father', group: 'Mount Sinai Community', content: 'p8-asafather', term: 'b-261124-p8-asafather', members: 2000, at: '2026-11-24T10:46', week: 0, batch: 'b-261124-p8-asafather'},
+  h112601:  { post: 'Thanksgiving Day', group: 'Smithtown NY community page', content: 'p10-thanksgivingday', term: 'b-261217-p6-crew', members: 4000, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112602:  { post: 'Thanksgiving Day', group: 'Brentwood Moms & Dads Group (NY)', content: 'p10-thanksgivingday', term: 'b-261211-p6-crew', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112603:  { post: 'Thanksgiving Day', group: 'Parents of Huntington NY', content: 'p10-thanksgivingday', term: 'g-parentsofhuntingto', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112606:  { post: 'Thanksgiving Day', group: 'Town of Babylon Shopping Local', content: 'p10-thanksgivingday', term: 'g-townofbabylonshopp', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112607:  { post: 'Thanksgiving Day', group: 'West Babylon Community Group and Surrounding LI Towns', content: 'p10-thanksgivingday', term: 'g-westbabyloncommuni', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112608:  { post: 'Thanksgiving Day', group: 'Moms of Northport- East Northport', content: 'p10-thanksgivingday', term: 'g-momsofnorthporteas', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112609:  { post: 'Thanksgiving Day', group: 'East Quogue Community Connection', content: 'p10-thanksgivingday', term: 'g-eastquoguecommunit', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112610:  { post: 'Thanksgiving Day', group: 'Mastic, Shirley, Mastic beach our community', content: 'p10-thanksgivingday', term: 'g-masticshirleymasti', members: 0, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday', via: 'h112611'},
+  h112611:  { post: 'Thanksgiving Day', group: 'Long Island Mom’s and Dad’s', content: 'p10-thanksgivingday', term: 'b-261126-p10-thanksgivingday', members: 48000, at: '2026-11-26T10:00', week: 0, nolink: true, batch: 'b-261126-p10-thanksgivingday'},
+  h112701:  { post: 'Black Friday', group: 'Amityville Families & Community Group', content: 'p3-blackfriday', term: 'g-amityvillefamilies', members: 5000, at: '2026-11-27T09:00', week: 0},
 };
 
 const DEST = 'https://quote.jagg-roofing.com/';

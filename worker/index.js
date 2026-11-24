@@ -1021,7 +1021,7 @@ const LINKS = {
   r112361:  { post: 'First company photo', group: 'SAINT JAMES / SMITHTOWN INFORMATIVE GROUP', content: 'p6-crew', term: 'b-261207-p2-aftercare', members: 13000, at: '2026-11-23T15:14', week: 0, batch: 'b-261123-p6-crew', via: 'r112328'},
   r112362:  { post: 'Four generations in Suffolk', group: 'Deer Park Talk', content: 'p7-generations', term: 'g-deerparktalk', members: 0, at: '2026-11-24T09:53', week: 0, batch: 'b-261124-p7-generations', via: 'w310'},
   r112364:  { post: 'Most roofers say replace', group: 'Port Jefferson Community NY', content: 'p4-replacerepair', term: 'b-261214-p2-aftercare', members: 4000, at: '2026-11-23T16:05', week: 0, batch: 'b-261123-p4-replacerepair', via: 'r112331'},
-  r112365:  { post: 'Once the crew leaves', group: 'Smithtown Community Alerts', content: 'p2-aftercare', term: 'b-261211-p8-asafather', members: 0, at: '2026-11-24T15:11', week: 0},
+  r112365:  { post: 'Once the crew leaves', group: 'Smithtown Community Alerts', content: 'p2-aftercare', term: 'b-261211-p8-asafather', members: 0, at: '2026-11-24T15:11', week: 0, batch: 'b-261124-p2-crewleaves', via: 'lim1124'},
   r112367:  { post: 'Thanksgiving table', group: 'Wading River Shoreham Local Businesses', content: 'p10-thanksgiving', term: 'g-wadingrivershoreha', members: 4000, at: '2026-11-23T10:08', week: 0, batch: 'b-261123-p10-thanksgiving', via: 'w302'},
   r112368:  { post: 'Thanksgiving table', group: 'Lindenhurst, NY, Uncensored', content: 'p10-thanksgiving', term: 'g-lindenhurstnyuncen', members: 0, at: '2026-11-24T12:32', week: 0, batch: 'b-261124-p10-thanksgiving', via: 'x1124001'},
   r112370:  { post: 'The socks photo', group: 'Kings Park Downtown', content: 'p9-socks', term: 'g-kingsparkdowntown', members: 3000, at: '2026-11-23T12:41', week: 0, batch: 'b-261123-p9-socks', via: 'r112325'},
@@ -1062,6 +1062,7 @@ const LINKS = {
   x1129163:  { post: 'As a father', group: 'East Islip, N.Y. 11730', content: 'p8-father', term: 'b-we1128', members: 6000, at: '2026-11-29T11:00', week: 0, batch: 'b-261129-p8-father', via: 'we11290'},
   x1129164:  { post: 'As a father', group: 'Sound Beach Neighbors', content: 'p8-father', term: 'b-we1129', members: 6000, at: '2026-11-29T11:00', week: 0, batch: 'b-261129-p8-father', via: 'we11290'},
   x1129165:  { post: 'As a father', group: 'Miller Place Parents & Communities', content: 'p8-father', term: 'g-millerplaceparents', members: 2000, at: '2026-11-29T11:00', week: 0, batch: 'b-261129-p8-father', via: 'we11290'},
+  lim1124:  { post: 'Once the crew leaves', group: 'Long Island Mom’s and Dad’s', content: 'p2-crewleaves', term: 'b-261124-p2-crewleaves', members: 48000, at: '2026-11-24T15:11', week: 0, batch: 'b-261124-p2-crewleaves'},
 };
 
 const DEST = 'https://quote.jagg-roofing.com/';

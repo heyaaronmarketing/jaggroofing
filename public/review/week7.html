@@ -173,6 +173,14 @@ a.lnk:hover{text-decoration:underline}
     font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
     background:var(--accent);color:#fff;vertical-align:3px}
   .cta{font-weight:600}
+  /* A group that demands the company name, phone or address in the post. */
+  .sig{font-size:12.5px;color:var(--faint)}
+  .needmissing{border-left:3px solid #DC2626;background:rgba(220,38,38,.07);
+    border-radius:4px;padding:9px 11px;font-size:12.5px;line-height:1.45}
+  .needmissing b{color:#DC2626}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]) .needmissing{background:rgba(220,38,38,.14)}
+    :root:not([data-theme="light"]) .needmissing b{color:#f87171}}
 
   /* The proposed offer. It is already in every post so Jacob can read it in
      place rather than imagine it, but it is not approved copy: until he says
